@@ -1,0 +1,98 @@
+{
+  "name": "@harshi04/dogear",
+  "version": "0.5.0",
+  "description": "Figma-style comments on any web page. Pins, areas, threads, resolve. Bring your own backend.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/harshii0509/dogear.git"
+  },
+  "homepage": "https://github.com/harshii0509/dogear#readme",
+  "bugs": {
+    "url": "https://github.com/harshii0509/dogear/issues"
+  },
+  "type": "module",
+  "bin": {
+    "dogear": "dist/cli.js"
+  },
+  "sideEffects": [
+    "./dist/element.*"
+  ],
+  "files": [
+    "dist",
+    "SETUP_PROMPT.md",
+    "docs"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    },
+    "./element": {
+      "types": "./dist/element.d.ts",
+      "import": "./dist/element.js"
+    }
+  },
+  "unpkg": "./dist/element.global.js",
+  "jsdelivr": "./dist/element.global.js",
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts",
+    "prepare": "tsup",
+    "prepublishOnly": "npm run typecheck && npm test"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "keywords": [
+    "comments",
+    "feedback",
+    "review",
+    "annotations",
+    "figma",
+    "react",
+    "web-component",
+    "mcp",
+    "agent"
+  ],
+  "devDependencies": {
+    "@modelcontextprotocol/client": "^2.3.1",
+    "@types/node": "^20.19.43",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "postgres": "^3.4.9",
+    "preact": "^10.29.8",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.3.1",
+    "frimousse": "^0.4.0",
+    "motion": "^14.0.0",
+    "zod": "^4.6.7"
+  }
+}

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>dogear · plain HTML</title>
+    <style>
+      body { font: 16px/1.5 Georgia, serif; max-width: 640px; margin: 64px auto; padding: 0 16px; }
+      /* Hostile page CSS, on purpose: none of it reaches the comment layer's shadow root. */
+      button { background: hotpink !important; font-size: 24px !important; }
+      * { letter-spacing: 0.1em; }
+    </style>
+  </head>
+  <body>
+    <h1>Pricing</h1>
+    <p>Press <b>Comment</b> (or <kbd>C</kbd>), then click anywhere to pin, or drag to mark an area.</p>
+    <p>Comments live in this browser's localStorage. Add <code>endpoint="/api/comments"</code> to use a server.</p>
+    <button>Start free trial</button>
+
+    <script src="../../dist/element.global.js"></script>
+    <dogear-comments shortcut="c"></dogear-comments>
+  </body>
+</html>

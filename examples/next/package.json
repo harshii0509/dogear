@@ -1,0 +1,19 @@
+{
+  "name": "dogear-next-example",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build"
+  },
+  "dependencies": {
+    "next": "^15",
+    "@harshi04/dogear": "file:../..",
+    "react": "^19",
+    "react-dom": "^19"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "typescript": "^5.8"
+  }
+}
