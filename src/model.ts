@@ -51,7 +51,7 @@ export type User = {
    * mentions and alerts. Never stored on comments, so never shown to visitors.
    */
   email?: string;
-  /** How others @mention them: `tara.mehta`. Default: the part of `email` before the @. */
+  /** How others @mention them: `jordan.lee`. Default: the part of `email` before the @. */
   handle?: string;
 };
 
@@ -150,7 +150,7 @@ export function firstName(author: User) {
 
 export function initials(name: string) {
   const parts = name.split(" ").filter(Boolean);
-  // One word is one letter: first-and-last of "Asha" would be "AA", which reads as someone else.
+  // One word is one letter: first-and-last of "Anna" would be "AA", which reads as someone else.
   const letters =
     parts.length > 1 ? parts[0][0] + parts.at(-1)![0] : (parts[0]?.[0] ?? "");
   return letters.toUpperCase() || "?";

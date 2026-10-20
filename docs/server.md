@@ -66,7 +66,7 @@ across restarts) are on the [roadmap](../ROADMAP.md).
 
 With `auth`, typing `@` in a comment lists the people who have signed in, and picking one puts
 `@handle` in the text. A handle is the `handle` your `auth` returns, else the email before the
-@ (`tara.mehta`), else the name. Mentions are kept on the comment (`mentions`) and drawn as the
+@ (`jordan.lee`), else the name. Mentions are kept on the comment (`mentions`) and drawn as the
 person's name.
 
 - **Only people who have signed in can be mentioned.** Everyone `auth` returns is remembered
@@ -77,12 +77,12 @@ person's name.
 - **Only they can mention.** A guest's `@name` stays plain text, so a stranger can't ping your
   team.
 - **Only those who can open the page.** Someone mentioned on a page `canSee` hides from them is
-  skipped: the response names them (`skipped`), and the writer sees "Kabir can't open this page.
+  skipped: the response names them (`skipped`), and the writer sees "Sam can't open this page.
   So they won't see this comment or be alerted."
 - Editing a comment says again who it mentions.
 - **They hear about it in the app.** `GET /mentions` lists where you were mentioned (on pages
   you can open, newest 50). The widget asks every 15 seconds while the tab is visible: a toast
-  ("Asha mentioned you on Pricing", with View), an `@2` badge on the tray's pill, and an `@` filter
+  ("Alex mentioned you on Pricing", with View), an `@2` badge on the tray's pill, and an `@` filter
   in its head. What you've seen is kept in this browser.
 
 ## An assistant

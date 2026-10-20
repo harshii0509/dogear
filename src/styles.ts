@@ -11,42 +11,80 @@
  * The accent is for the one thing to do next: Send once there is text, the pin being placed, the
  * outline while aiming, and focus. Everything else is the surface, the text and its muted tones.
  */
+/**
+ * The light glass: the dark one mirrored, frosted white with black text in the same steps. Used by
+ * `theme="light"`, and by `theme="auto"` when the visitor's system is light. Every value is still
+ * a fallback, so a site's `--dogear-*` wins in either theme.
+ */
+const LIGHT = /* css */ `
+  --_surface: var(--dogear-surface, oklch(1 0 0 / 0.72));
+  --_strong: var(--dogear-strong, oklch(0 0 0 / 0.88));
+  --_text: var(--dogear-text, oklch(0 0 0 / 0.68));
+  --_muted: var(--dogear-muted, oklch(0 0 0 / 0.46));
+  --_faint: var(--dogear-faint, oklch(0 0 0 / 0.38));
+  --_placeholder: var(--dogear-placeholder, oklch(0 0 0 / 0.38));
+  --_divider: var(--dogear-divider, oklch(0 0 0 / 0.07));
+  --_hover: var(--dogear-hover, oklch(0 0 0 / 0.05));
+  --_send-idle: var(--dogear-send-idle, oklch(0 0 0 / 0.14));
+  --_accent: var(--dogear-accent, oklch(0.2686 0 0));
+  --_on-accent: var(--dogear-on-accent, oklch(0.9851 0 0));
+  --_well: var(--dogear-well, oklch(0 0 0 / 0.04));
+  --_highlight: var(--dogear-highlight, inset 0 0 0 1px oklch(1 0 0 / 0.5), inset 0 1px 0 oklch(1 0 0 / 0.9));
+  --_row-highlight: var(--dogear-row-highlight, 0 0.5px 0.5px oklch(0 0 0 / 0.06), 0 1px 2px oklch(0 0 0 / 0.04),
+    inset 0 0.5px 0 oklch(1 0 0 / 0.8));
+  --_shadow: var(--dogear-shadow, 0 0 0 1px oklch(0 0 0 / 0.08), 0 3px 12px oklch(0 0 0 / 0.08),
+    0 8px 40px oklch(0 0 0 / 0.1), 0 24px 64px oklch(0 0 0 / 0.08));
+  /* A white pin on a white page: a ring and a firmer shadow keep it in view. */
+  --_pin-shadow: var(--dogear-pin-shadow, 0 0 0 1px oklch(0 0 0 / 0.12), 0 2px 8px oklch(0 0 0 / 0.18));
+  --_mention: var(--dogear-mention, #2f6fd0);
+  --_agent: var(--dogear-agent, #7c4ddb);
+`;
+
 export const STYLES = /* css */ `
 .pc-root {
-  --_surface: var(--dogear-surface, #2c2c2c);
-  --_accent: var(--dogear-accent, #3f8ae2);
-  --_divider: var(--dogear-divider, #444444);
-  --_placeholder: var(--dogear-placeholder, #808080);
-  --_muted: var(--dogear-muted, #999999);
-  --_send-idle: var(--dogear-send-idle, #757575);
-  --_text: var(--dogear-text, #ffffff);
+  /* Dark glass, the default (theme="dark"): black at 64% under a 16px blur, a lit white edge, and
+     white text at 92/72/40/32%. theme="light" mirrors it (LIGHT above). */
+  --_surface: var(--dogear-surface, oklch(0 0 0 / 0.64));
+  --_accent: var(--dogear-accent, oklch(0.9851 0 0));
+  --_divider: var(--dogear-divider, oklch(1 0 0 / 0.08));
+  --_placeholder: var(--dogear-placeholder, oklch(1 0 0 / 0.32));
+  --_muted: var(--dogear-muted, oklch(1 0 0 / 0.4));
+  --_send-idle: var(--dogear-send-idle, oklch(1 0 0 / 0.16));
+  --_text: var(--dogear-text, oklch(1 0 0 / 0.72));
   /* Text and icons on the accent: the pending pin's send, the target label, initials, counts. */
-  --_on-accent: var(--dogear-on-accent, #ffffff);
-  --_hover: var(--dogear-hover, rgba(255, 255, 255, 0.08));
+  --_on-accent: var(--dogear-on-accent, oklch(0.2686 0 0));
+  --_hover: var(--dogear-hover, oklch(1 0 0 / 0.08));
   --_changed: var(--dogear-changed, #f5a524);
-  --_shadow: var(--dogear-shadow, 0 2px 8px rgba(0, 0, 0, 0.25), 0 0 0 0.5px rgba(0, 0, 0, 0.12));
+  --_shadow: var(--dogear-shadow, 0 0 0 1px oklch(0 0 0 / 0.72), 0 3px 12px oklch(0 0 0 / 0.32),
+    0 8px 40px oklch(0 0 0 / 0.32), 0 24px 64px oklch(0 0 0 / 0.32));
   --_z: var(--dogear-z-index, 2147483000);
-  /* The material. All off by default; together they make a frosted panel (see README, Theming). */
-  --_radius: var(--dogear-radius, 16px);
-  --_row-radius: var(--dogear-row-radius, 12px);
-  --_backdrop: var(--dogear-backdrop, none);
-  --_highlight: var(--dogear-highlight, 0 0 #0000);
-  --_well: var(--dogear-well, transparent);
+  /* The material: a frosted panel with a lit edge (see README, Theming). */
+  --_radius: var(--dogear-radius, 22px);
+  --_row-radius: var(--dogear-row-radius, 10px);
+  --_backdrop: var(--dogear-backdrop, blur(16px));
+  --_highlight: var(--dogear-highlight, inset 0 0 0 1px oklch(1 0 0 / 0.08), inset 0 0.5px 0.5px oklch(1 0 0 / 0.1),
+    inset 0 1px 2px oklch(1 0 0 / 0.04));
+  --_well: var(--dogear-well, oklch(0 0 0 / 0.12));
   --_row-active: var(--dogear-row-active, var(--_hover));
-  --_row-highlight: var(--dogear-row-highlight, 0 0 #0000);
+  --_row-highlight: var(--dogear-row-highlight, 0 0.5px 0.5px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04),
+    inset 0 0.5px 0.5px oklch(1 0 0 / 0.1), inset 0 1px 2px oklch(1 0 0 / 0.04));
   /* Quieter than muted (times, the dot between name and time), and louder than text (the dock). */
-  --_faint: var(--dogear-faint, var(--_muted));
-  --_strong: var(--dogear-strong, var(--_text));
-  /* What sits on the page rather than on a panel: the pin being placed, the aim and area outlines. */
-  --_mark: var(--dogear-mark, var(--_accent));
+  --_faint: var(--dogear-faint, oklch(1 0 0 / 0.32));
+  --_strong: var(--dogear-strong, oklch(1 0 0 / 0.92));
+  /* What sits on the page rather than on a panel: the pin being placed, the aim and area outlines.
+     Its own blue, not the accent, so it shows on any page, light or dark. */
+  --_mark: var(--dogear-mark, #3f8ae2);
   /* A field inside a card (a reply, an edit). */
   --_field: var(--dogear-field, color-mix(in srgb, var(--_text) 6%, transparent));
   /* Pins sit on the page, small: a panel's deep shadow would be a halo around each. */
-  --_pin-shadow: var(--dogear-pin-shadow, var(--_shadow));
-  --_on-mark: var(--dogear-on-mark, var(--_on-accent));
-  /* An @mention in a comment, and the agent's badge: the accent unless set. */
-  --_mention: var(--dogear-mention, var(--_accent));
-  --_agent: var(--dogear-agent, var(--_accent));
+  /* A dark ring for light pages and a faint lit one outside it for dark pages: each vanishes on the
+     page it isn't for. */
+  --_pin-shadow: var(--dogear-pin-shadow, 0 0 0 0.5px oklch(0 0 0 / 0.4), 0 0 0 1.5px oklch(1 0 0 / 0.14),
+    0 2px 6px oklch(0 0 0 / 0.16));
+  --_on-mark: var(--dogear-on-mark, #ffffff);
+  /* An @mention in a comment, and the assistant: their own colours, readable on the glass. */
+  --_mention: var(--dogear-mention, #7fb2f0);
+  --_agent: var(--dogear-agent, #b39cf5);
   font-family: var(--dogear-font, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
   font-size: 13px;
   line-height: 1.5;
@@ -57,6 +95,10 @@ export const STYLES = /* css */ `
   -webkit-tap-highlight-color: transparent;
 }
 .pc-root *, .pc-root *::before, .pc-root *::after { box-sizing: border-box; margin: 0; }
+.pc-root[data-theme="light"] {${LIGHT}}
+@media (prefers-color-scheme: light) {
+  .pc-root[data-theme="auto"] {${LIGHT}}
+}
 /* Zero specificity (:where), so .pc-fab and .pc-pin can set their own background. Controls answer a
    tap at once (no double-tap-zoom wait) and a long press doesn't select their labels; comment text
    stays selectable. */

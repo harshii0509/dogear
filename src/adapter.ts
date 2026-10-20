@@ -17,7 +17,7 @@ import {
 /**
  * Everything the layer needs from a backend. Implement it against anything: Supabase, Firebase,
  * Postgres behind your own route, a paid service, a spreadsheet. `docs/contract.md` has the rules
- * every implementation must keep; `SETUP_PROMPT.md` writes one for you.
+ * every implementation must keep; the setup prompt in the README has your coding agent write one.
  *
  * Throw from any method to fail it; the layer rolls back and says so. Throwing from `me` or from
  * the first `list` hides the layer (not signed in, not configured), and so do two looks in a row
@@ -73,7 +73,7 @@ export type Adapter = {
   people?(): Promise<Person[]>;
   /**
    * Optional: comments that @mention the current user, on pages they can open, not their own,
-   * newest first, without `state`. The layer polls it to say "Asha mentioned you", wherever they
+   * newest first, without `state`. The layer polls it to say "Alex mentioned you", wherever they
    * are on the site. Without it, mentions are only seen where they were left.
    */
   mentions?(): Promise<Comment[]>;

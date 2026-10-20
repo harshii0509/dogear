@@ -31,7 +31,7 @@ export function toMarkdown(comments: Comment[], title?: string): string {
   return lines.join("\n") + "\n";
 }
 
-/** `**Asha Rao** (2026-10-12 09:30 UTC): the body`, the body's line breaks kept inside the item. */
+/** `**Alex Doe** (2026-10-12 09:30 UTC): the body`, the body's line breaks kept inside the item. */
 function entry(comment: Comment) {
   const when = new Date(comment.createdAt).toISOString().slice(0, 16).replace("T", " ");
   const body = comment.body.replace(/\n/g, "\n    ");

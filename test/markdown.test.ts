@@ -10,7 +10,7 @@ const anchor = {
   text: "Start free trial", label: 'button "Start free trial"',
 };
 const comment = (over: Partial<Comment>): Comment => ({
-  id: "x", page: "/pricing?tab=a", parentId: null, body: "", author: { id: "a", name: "Asha Rao" },
+  id: "x", page: "/pricing?tab=a", parentId: null, body: "", author: { id: "a", name: "Alex Doe" },
   anchor: null, createdAt: at, editedAt: null, resolved: false, ...over,
 });
 
@@ -30,14 +30,14 @@ test("threads in order, each with its element, status and replies", () => {
       '- Selector: `[data-testid="trial"]`',
       '- Element text: "Start free trial"',
       "",
-      "**Asha Rao** (2026-10-12 09:30 UTC): Make this the primary button\n    and bigger",
+      "**Alex Doe** (2026-10-12 09:30 UTC): Make this the primary button\n    and bigger",
       "  - **Ravi** (2026-10-12 09:30 UTC): Agreed",
       "",
       '### 2. [data-testid="trial"] (resolved)',
       "- Page: /pricing?tab=a",
       '- Selector: `[data-testid="trial"]`',
       "",
-      "**Asha Rao** (2026-10-12 09:30 UTC): Tighten the spacing",
+      "**Alex Doe** (2026-10-12 09:30 UTC): Tighten the spacing",
       "",
     ].join("\n"),
   );

@@ -519,7 +519,7 @@ export function createDogear(options: DogearOptions): DogearHandler {
     }
 
     if (rest[0] === "mentions" && rest.length === 1 && method === "GET") {
-      // Where you were @mentioned, on pages you can still open: for "Asha mentioned you".
+      // Where you were @mentioned, on pages you can still open: for "Alex mentioned you".
       if (!user) throw new HttpError(401, "sign in first");
       if (!known.has(user)) return json([]);
       const found = store.mentioning
