@@ -15,7 +15,7 @@ let served: Served;
 
 before(async () => {
   dir = await mkdtemp(join(tmpdir(), "dogear-serve-"));
-  served = await serve({ port: 0, file: join(dir, "comments.json"), name: "Asha" });
+  served = await serve({ port: 0, file: join(dir, "comments.json"), name: "Alex" });
 });
 after(async () => {
   await served.close();
@@ -41,10 +41,10 @@ function raw(path: string, headers: Record<string, string>, method = "GET", body
 test("the contract, with you in the browser and the agent by token", async () => {
   const you = httpAdapter(served.endpoint);
   const agent = httpAdapter(served.endpoint, { token: served.token });
-  assert.equal((await you.me())?.name, "Asha");
+  assert.equal((await you.me())?.name, "Alex");
   assert.deepEqual(await agent.me(), { id: "agent", name: "Agent", agent: true });
   // A page with guests on asks to join; locally there is one person, already in.
-  assert.equal((await httpAdapter(served.endpoint, { guests: true }).join!("Someone")).name, "Asha");
+  assert.equal((await httpAdapter(served.endpoint, { guests: true }).join!("Someone")).name, "Alex");
 
   const root = await you.create({ page: "/pricing?tab=a", body: "Too small", parentId: null, anchor });
   const reply = await agent.create({ page: "/pricing", body: "Fixed in Hero.tsx", parentId: root.id, anchor: null });
@@ -105,10 +105,10 @@ test("--guest starts signed out, and joining signs you in with your avatar", asy
     assert.deepEqual(await page.list("/"), []);
     await assert.rejects(page.create({ page: "/", body: "hi", parentId: null, anchor }), /401/);
     await assert.rejects(page.join!("   "), /400/);
-    assert.deepEqual(await page.join!("Meera S", "url(x)"), { id: "local", name: "Meera S" });
-    const me = await page.join!("Meera S", "sage");
-    assert.deepEqual(me, { id: "local", name: "Meera S" }, "already in: joining again changes nothing");
-    assert.equal((await page.create({ page: "/", body: "hi", parentId: null, anchor })).author.name, "Meera S");
+    assert.deepEqual(await page.join!("Riley S", "url(x)"), { id: "local", name: "Riley S" });
+    const me = await page.join!("Riley S", "sage");
+    assert.deepEqual(me, { id: "local", name: "Riley S" }, "already in: joining again changes nothing");
+    assert.equal((await page.create({ page: "/", body: "hi", parentId: null, anchor })).author.name, "Riley S");
   } finally {
     await guest.close();
     await rm(guestDir, { recursive: true, force: true });
@@ -116,7 +116,7 @@ test("--guest starts signed out, and joining signs you in with your avatar", asy
   const fresh = await mkdtemp(join(tmpdir(), "dogear-serve-guest-"));
   const second = await serve({ port: 0, file: join(fresh, "comments.json"), guest: true });
   try {
-    assert.equal((await httpAdapter(second.endpoint, { guests: true }).join!("Kabir", "sky")).tint, "sky");
+    assert.equal((await httpAdapter(second.endpoint, { guests: true }).join!("Sam", "sky")).tint, "sky");
   } finally {
     await second.close();
     await rm(fresh, { recursive: true, force: true });

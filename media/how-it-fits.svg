@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" width="1200" height="640" role="img" aria-labelledby="title desc">
+<title id="title">How Dogear fits together</title>
+<desc id="desc">Your page runs the widget, which talks to one route made by createDogear. The route checks who you are and what you may see, then stores the comment. Auth, moderation, alerts and an assistant are optional. Coding agents read the same route over MCP.</desc>
+<style>
+  :root { --canvas: #ffffff; --dot: #d7d8dd; --frame: #dcdde2; --tile: #f1f1f3; --tile-line: #d2d3d8;
+    --ink: #15161a; --label: #5c5e66; --muted: #8a8c94; --wire: #b5b7bf; --accent: #2457e6;
+    --on-accent: #ffffff; }
+  @media (prefers-color-scheme: dark) {
+    :root { --canvas: #111216; --dot: #272930; --frame: #2a2c33; --tile: #191a20; --tile-line: #33353d;
+      --ink: #ecedf0; --label: #a3a5ae; --muted: #6f717a; --wire: #4a4c55; --accent: #5a85ff; }
+  }
+  .bg { fill: var(--canvas); }
+  .dot { fill: var(--dot); }
+  .frame { fill: none; stroke: var(--frame); }
+  .grp { fill: none; stroke: var(--tile-line); }
+  .grp.dash { stroke-dasharray: 5 5; }
+  .grp.accent { stroke: var(--accent); stroke-opacity: 0.55; }
+  .tile { fill: var(--tile); stroke: var(--tile-line); }
+  .tile.sel { stroke: var(--accent); stroke-width: 1.5; }
+  .tile.on { fill: var(--accent); stroke: var(--accent); }
+  .node.off { opacity: 0.5; }
+  .node.off .tile { stroke-dasharray: 4 4; }
+  .ico { fill: none; stroke: var(--ink); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .node.on .ico { stroke: var(--on-accent); }
+  .wire { fill: none; stroke: var(--wire); stroke-width: 1.3; stroke-dasharray: 4 4; }
+  .wire.live { stroke: var(--accent); stroke-opacity: 0.45; }
+  .wire.off { opacity: 0.55; }
+  .pulse { fill: none; stroke: var(--accent); stroke-width: 2.6; stroke-linecap: round; }
+  .t { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    paint-order: stroke; stroke: var(--canvas); stroke-width: 7px; stroke-linejoin: round; }
+  .t-lab { font-size: 13px; letter-spacing: 0.08em; fill: var(--label); }
+  .t-sub { font-size: 12px; fill: var(--accent); }
+  .node.off .t-sub { fill: var(--muted); }
+  .t-grp { font-size: 13px; letter-spacing: 0.08em; fill: var(--ink); }
+  .t-grp.accent { fill: var(--accent); }
+  .t-edge { font-size: 11px; letter-spacing: 0.08em; fill: var(--muted); }
+  .t-note { font-size: 12px; letter-spacing: 0.06em; fill: var(--label); }
+  .t-title { font-size: 15px; letter-spacing: 0.04em; fill: var(--ink); }
+  @media (prefers-reduced-motion: reduce) { .pulse { display: none; } .wire.live { stroke-opacity: 0.8; } }
+  @keyframes p0 { 0%, 0.000% { stroke-dashoffset: 34; } 13.607%, 100% { stroke-dashoffset: -92.0; } }
+  .p0 { stroke-dasharray: 34 160.0; stroke-dashoffset: 34; animation: p0 2205ms linear infinite; }
+  @keyframes p1 { 0%, 9.935% { stroke-dashoffset: 34; } 30.022%, 100% { stroke-dashoffset: -152.0; } }
+  .p1 { stroke-dasharray: 34 220.0; stroke-dashoffset: 34; animation: p1 2205ms linear infinite; }
+  @keyframes p2 { 0%, 26.350% { stroke-dashoffset: 34; } 44.276%, 100% { stroke-dashoffset: -132.0; } }
+  .p2 { stroke-dasharray: 34 200.0; stroke-dashoffset: 34; animation: p2 2205ms linear infinite; }
+  @keyframes p3 { 0%, 40.605% { stroke-dashoffset: 34; } 62.851%, 100% { stroke-dashoffset: -172.0; } }
+  .p3 { stroke-dasharray: 34 240.0; stroke-dashoffset: 34; animation: p3 2205ms linear infinite; }
+</style>
+<defs><pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse"><circle class="dot" cx="11" cy="11" r="1.1"/></pattern></defs>
+<rect class="bg" x="0" y="0" width="1200" height="640"/>
+<rect x="0" y="0" width="1200" height="640" fill="url(#dots)"/>
+<rect class="grp" x="420" y="66" width="440" height="500"/>
+<text x="438" y="71" class="t t-grp" text-anchor="start">@HARSHI04/DOGEAR/SERVER</text>
+<path class="wire live" d="M154 310 L246 310"/>
+<path class="wire live" d="M334 310 L486 310"/>
+<path class="wire live" d="M574 310 L706 310"/>
+<path class="wire live" d="M794 310 L966 310"/>
+<path class="wire" d="M530 194 L530 266"/>
+<path class="wire" d="M530 426 L530 354"/>
+<path class="wire" d="M750 266 L750 194"/>
+<path class="wire" d="M750 354 L750 426"/>
+<path class="wire" d="M794 150 L966 150"/>
+<path class="wire" d="M794 470 L966 470"/>
+<path class="wire" d="M334 470 L400 470 L400 310 L486 310"/>
+<path class="pulse p0" d="M154 310 L246 310"/><path class="pulse p1" d="M334 310 L486 310"/><path class="pulse p2" d="M574 310 L706 310"/><path class="pulse p3" d="M794 310 L966 310"/>
+<g class="node">
+<rect class="tile" x="66" y="266" width="88" height="88" rx="2"/>
+<g transform="translate(92.6 292.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18z M3 12h18 M12 3c3 3.2 3 14.8 0 18 M12 3c-3 3.2-3 14.8 0 18"/></g>
+<text x="110" y="378" class="t t-lab" text-anchor="middle">YOUR PAGE</text>
+<text x="110" y="396" class="t t-sub" text-anchor="middle">any site</text>
+</g>
+<g class="node on">
+<rect class="tile on" x="246" y="266" width="88" height="88" rx="2"/>
+<g transform="translate(272.6 292.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M4 12a8 8 0 1 1 3.2 6.4L4 20l1-3.6A8 8 0 0 1 4 12z M8.6 12h.01 M12 12h.01 M15.4 12h.01"/></g>
+<text x="290" y="378" class="t t-lab" text-anchor="middle">WIDGET</text>
+<text x="290" y="396" class="t t-sub" text-anchor="middle">&lt;dogear-comments&gt;</text>
+</g>
+<g class="node">
+<rect class="tile" x="246" y="426" width="88" height="88" rx="2"/>
+<g transform="translate(272.6 452.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M4 5h16v14H4z M7.5 9.5L10 12l-2.5 2.5 M12 15h4"/></g>
+<text x="290" y="538" class="t t-lab" text-anchor="middle">MCP</text>
+<text x="290" y="556" class="t t-sub" text-anchor="middle">coding agents</text>
+</g>
+<g class="node">
+<rect class="tile" x="486" y="106" width="88" height="88" rx="2"/>
+<g transform="translate(512.6 132.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M8 5a4 4 0 1 0 0 8a4 4 0 0 0 0-8z M11 12l8 8 M15.5 16.5l2-2 M18 19l1.8-1.8"/></g>
+<text x="530" y="218" class="t t-lab" text-anchor="middle">AUTH</text>
+<text x="530" y="236" class="t t-sub" text-anchor="middle">optional</text>
+</g>
+<g class="node">
+<rect class="tile" x="486" y="266" width="88" height="88" rx="2"/>
+<g transform="translate(512.6 292.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M8 8l-4 4l4 4 M16 8l4 4l-4 4 M13.5 6l-3 12"/></g>
+<text x="530" y="378" class="t t-lab" text-anchor="middle">ONE ROUTE</text>
+<text x="530" y="396" class="t t-sub" text-anchor="middle">createDogear</text>
+</g>
+<g class="node">
+<rect class="tile" x="486" y="426" width="88" height="88" rx="2"/>
+<g transform="translate(512.6 452.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M12 3l7 3v6c0 4.5-3 7.5-7 9c-4-1.5-7-4.5-7-9V6z M9 12l2 2l4-4"/></g>
+<text x="530" y="538" class="t t-lab" text-anchor="middle">MODERATE</text>
+<text x="530" y="556" class="t t-sub" text-anchor="middle">optional</text>
+</g>
+<g class="node">
+<rect class="tile" x="706" y="106" width="88" height="88" rx="2"/>
+<g transform="translate(732.6 132.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15z M10 20.5a2 2 0 0 0 4 0"/></g>
+<text x="750" y="218" class="t t-lab" text-anchor="middle">NOTIFY</text>
+<text x="750" y="236" class="t t-sub" text-anchor="middle">optional</text>
+</g>
+<g class="node">
+<rect class="tile" x="706" y="266" width="88" height="88" rx="2"/>
+<g transform="translate(732.6 292.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M2.5 12S6 6 12 6s9.5 6 9.5 6S18 18 12 18s-9.5-6-9.5-6z M12 9.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5z"/></g>
+<text x="750" y="378" class="t t-lab" text-anchor="middle">CAN SEE?</text>
+<text x="750" y="396" class="t t-sub" text-anchor="middle">your rule</text>
+</g>
+<g class="node">
+<rect class="tile" x="706" y="426" width="88" height="88" rx="2"/>
+<g transform="translate(732.6 452.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M11 3l1.8 5.2L18 10l-5.2 1.8L11 17l-1.8-5.2L4 10l5.2-1.8z M18 15l.7 1.8l1.8.7l-1.8.7L18 20l-.7-1.8l-1.8-.7l1.8-.7z"/></g>
+<text x="750" y="538" class="t t-lab" text-anchor="middle">ASSISTANT</text>
+<text x="750" y="556" class="t t-sub" text-anchor="middle">optional</text>
+</g>
+<g class="node">
+<rect class="tile" x="966" y="106" width="88" height="88" rx="2"/>
+<g transform="translate(992.6 132.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M4 13h4l1.5 3h5l1.5-3h4 M4 13l2.5-8h11L20 13v6H4z M12 12V6.5 M9.5 9L12 6.5L14.5 9"/></g>
+<text x="1010" y="218" class="t t-lab" text-anchor="middle">WEBHOOK</text>
+<text x="1010" y="236" class="t t-sub" text-anchor="middle">or your own</text>
+</g>
+<g class="node sel">
+<rect class="tile sel" x="966" y="266" width="88" height="88" rx="2"/>
+<g transform="translate(992.6 292.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M5 4.5h14v6.5H5z M5 13h14v6.5H5z M8.5 7.75h.01 M8.5 16.25h.01 M12 7.75h4 M12 16.25h4"/></g>
+<text x="1010" y="378" class="t t-lab" text-anchor="middle">STORE</text>
+<text x="1010" y="396" class="t t-sub" text-anchor="middle">postgres · file · memory</text>
+</g>
+<g class="node">
+<rect class="tile" x="966" y="426" width="88" height="88" rx="2"/>
+<g transform="translate(992.6 452.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M12 3.5v3 M7 7.5h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z M9.5 12.5h.01 M14.5 12.5h.01 M9 21h6"/></g>
+<text x="1010" y="538" class="t t-lab" text-anchor="middle">YOUR MODEL</text>
+<text x="1010" y="556" class="t t-sub" text-anchor="middle">answer(thread)</text>
+</g>
+<text x="600" y="612" class="t t-note" text-anchor="middle">NO SERVER? GIVE THE WIDGET AN ADAPTER: SUPABASE, YOUR API, LOCALSTORAGE</text>
+<rect class="frame" x="0.5" y="0.5" width="1199" height="639"/>
+</svg>

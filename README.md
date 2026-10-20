@@ -3,6 +3,10 @@
 Figma-style comments on any web page. Click to drop a pin or drag to mark an area, then write.
 You get threads, replies, edit, resolve, and live updates. It works in plain HTML, React and Next.js.
 
+<p align="center">
+  <img src="media/demo.gif" width="960" alt="A pricing page with Dogear: pressing C, clicking the Start free trial button to pin a comment and posting it, then opening another person's thread, replying, and reacting with a party emoji.">
+</p>
+
 **Bring your own backend, or use ours.** `@harshi04/dogear/server` is the whole backend as one route handler
 over Postgres, a JSON file or memory: it works with nothing but a database, and turns on guests,
 your sign-in, private pages and moderation as you add them. Or give Dogear a five-function adapter
@@ -20,6 +24,48 @@ For plain HTML, load it from a CDN, or download `element.global.js` from a
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@harshi04/dogear@0.5/dist/element.global.js"></script>
+```
+
+## Set it up with your coding agent
+
+Open Claude Code, Cursor, Codex or any coding agent in your project and paste this. It's an
+ordinary request in your own words: the agent looks at your project, asks you a few questions,
+sets Dogear up, and ends with a list of what's left for you to do. It asks before it installs
+anything, it leaves your secrets to you, and nothing is sent anywhere.
+
+```text
+I'd like to add Dogear (npm: @harshi04/dogear, MIT licence) to this project. It's Figma-style
+comments on our pages: pins, threads, replies and resolve. Please set it up with me.
+
+1. First look around: our framework, any sign-in we already have, our database, and where we
+   host. Then ask me these in one message, with your recommendation for each:
+   - Where should comments be stored? (For a Node or Next.js app, Dogear's own route handler
+     over our Postgres. A JSON file or memory just to try it. Or an adapter for Supabase or our
+     own API.)
+   - Who can comment? (Our existing sign-in, or visitors who just give a name.)
+   - Who should see comments? (Everyone, or only some pages or environments.)
+   - Should my coding agent be able to read and reply to comments? (Dogear has an MCP server.)
+   Please wait for my answers before installing anything.
+
+2. Install @harshi04/dogear and set it up the way I choose. Use the package's docs as the
+   reference: node_modules/@harshi04/dogear/README.md, docs/server.md (createDogear, stores
+   and options), docs/contract.md (the rules every backend keeps) and docs/examples/.
+   - The author of a comment should come from the server (our session, or Dogear's signed
+     guest cookie), never from the browser.
+   - Mount the comments once, near the root of the app.
+
+3. For secrets, please add the variable names to .env.example (or list them for me) and leave
+   the values to me. Don't commit, push or deploy; I'll do that myself.
+
+4. Check that it works: typecheck and build, and if there's a route, start the dev server and
+   try GET /me and a POST with curl.
+
+5. Finish with two short lists:
+   - Done: each file you added or changed, one line each.
+   - My turn: what I still need to do, in order. Include each environment variable to set
+     (locally and on our host) and how to make its value, any database step, and how to try
+     it (open the app, press C, drop a pin, reply). Then the optional extras: theming with the
+     --dogear-* CSS variables, moderation, and connecting a coding agent (MCP).
 ```
 
 ## Quick start
@@ -51,11 +97,46 @@ export const DogearComments = () => <Comments shortcut="c" />;
 
 With no adapter, comments are stored in this browser's localStorage, which is enough to try it out.
 
+## How it works
+
+**One widget, one route.** The widget on your page talks to a single route that `createDogear`
+makes. The route checks who you are and what you may see, then stores the comment. Everything
+past plain commenting is optional, and switches on when you give it what it needs.
+
+<img src="media/how-it-fits.svg" alt="How Dogear fits together: your page, the widget, one route with optional auth and moderation, a can-see rule, and a store; optional notify and assistant run after the response, and coding agents use the same route over MCP." width="100%">
+
+**Nobody has to sign in.** With `guests: true`, a visitor gives a name the first time and
+comments. The server signs a cookie, so the author never comes from the browser.
+[docs/server.md](docs/server.md)
+
+<img src="media/guests.svg" alt="Guests: a visitor gives a name once, comments, and the route stores it under a signed cookie. Mentions and alerts stay off until you add auth." width="100%">
+
+**Tag someone, and they hear about it.** With your own sign-in, `@` lists the people who can open
+the page. They see it in the app (a toast and an `@` badge), and `notify` can tell them wherever
+your team talks. [Mentions](docs/server.md#mentions) · [Alerts](docs/server.md#alerts)
+
+<img src="media/mentions.svg" alt="Mentions: a tag counts only for someone who has signed in and can open the page; they get an in-app alert and your notifier's message, and open the thread from its link. Anyone else stays plain text, or is skipped and the author is told." width="100%">
+
+**An assistant that answers in the thread.** Give `assistant` your own `answer(thread)`: your
+model, your docs. Dogear decides when to ask and saves the reply, marked as AI.
+[An assistant](docs/server.md#an-assistant)
+
+<img src="media/assistant.svg" alt="The assistant: a new thread or an @mention calls your answer function after the response; the reply is saved in the thread, marked as AI." width="100%">
+
+**From a comment to a fix, and back.** Your coding agent reads the threads over MCP, with each
+element's selector and text, makes the change, then replies and resolves.
+[docs/mcp.md](docs/mcp.md)
+
+<img src="media/mcp.svg" alt="MCP: a reviewer pins a comment on an element; a coding agent picks it up with dogear_next, makes a change for review, replies and resolves, and the reply shows in the thread on the page." width="100%">
+
+The diagrams are drawn by [`media/diagrams.mjs`](media/diagrams.mjs).
+
 ## Pick your backend
 
-**Let your agent do it.** Paste [`SETUP_PROMPT.md`](SETUP_PROMPT.md) into Claude Code, Cursor or
-any coding agent. It asks where you want comments stored and who your users are, then writes the
-adapter, the schema and the security rules, mounts it and checks it.
+**Let your agent do it.** Paste the prompt in [Set it up with your coding agent](#set-it-up-with-your-coding-agent)
+into Claude Code, Cursor or any coding agent. It asks where you want comments stored and who your
+users are, then sets up the backend and the security rules, mounts it, checks it, and tells you
+what's left for you.
 
 **Or do it yourself.**
 
@@ -182,7 +263,7 @@ reviewers a link with `?review`. The parameter isn't part of where comments live
 
 A comment left halfway through a form keeps the form, so whoever opens it sees what you saw.
 Register the form's state; Dogear saves it with each thread started while the form is on screen,
-puts it back when the thread is opened, and shows "Showing Asha's form · Back to my form".
+puts it back when the thread is opened, and shows "Showing Alex's form · Back to my form".
 
 ```tsx
 import { peekSnapshot, useDogearSnapshot } from "@harshi04/dogear/react";

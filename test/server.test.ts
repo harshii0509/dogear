@@ -46,8 +46,8 @@ const root = (page = "/pricing", body = "Too small") => ({ page, body, parentId:
 
 /** Some people a host's sign-in knows, by the x-user header (a stand-in for a session cookie). */
 const PEOPLE: Record<string, User> = {
-  asha: { id: "u-asha", name: "Asha Rao", avatar: "https://img.test/asha.png", email: "asha.rao@acme.test" },
-  kabir: { id: "u-kabir", name: "Kabir", email: "kabir@acme.test" },
+  alex: { id: "u-alex", name: "Alex Doe", avatar: "https://img.test/alex.png", email: "alex.doe@acme.test" },
+  sam: { id: "u-sam", name: "Sam", email: "sam@acme.test" },
   boss: { id: "u-boss", name: "Boss", admin: true, handle: "the-boss" },
 };
 const auth: DogearOptions["auth"] = (request) => PEOPLE[request.headers.get("x-user") ?? ""] ?? null;
@@ -61,7 +61,7 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
       assert.deepEqual((await call(dogear, "GET", "?path=/")).json, []);
       assert.equal((await call(dogear, "GET", "/me")).status, 401);
       assert.equal((await call(dogear, "POST", "", { body: root() })).status, 401);
-      assert.equal((await call(dogear, "POST", "/me", { body: { name: "Meera" } })).status, 404);
+      assert.equal((await call(dogear, "POST", "/me", { body: { name: "Riley" } })).status, 404);
       assert.equal((await call(dogear, "GET", "?path=nope")).status, 400);
       assert.equal((await call(dogear, "GET", "/nothing/here")).status, 404);
       await store.done?.();
@@ -73,19 +73,19 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
       const dogear = createDogear({ store, guests: { tints: ["sky", "sage"] }, secret: SECRET });
 
       assert.equal((await call(dogear, "POST", "/me", { body: { name: "  " } })).status, 400);
-      const joined = await call(dogear, "POST", "/me", { body: { name: "Meera  S", tint: "url(x)" } });
+      const joined = await call(dogear, "POST", "/me", { body: { name: "Riley  S", tint: "url(x)" } });
       assert.equal(joined.status, 200);
-      assert.equal(joined.json.name, "Meera S");
+      assert.equal(joined.json.name, "Riley S");
       assert.equal(joined.json.tint, undefined, "an avatar the site doesn't have is dropped");
       assert.ok(joined.cookie?.startsWith("dogear_user="));
-      const meera = joined.cookie!;
-      assert.deepEqual((await call(dogear, "GET", "/me", { cookie: meera })).json, joined.json);
+      const riley = joined.cookie!;
+      assert.deepEqual((await call(dogear, "GET", "/me", { cookie: riley })).json, joined.json);
 
       // Renaming keeps the id; a tampered cookie is nobody.
-      const renamed = await call(dogear, "POST", "/me", { cookie: meera, body: { name: "Meera", tint: "sky" } });
+      const renamed = await call(dogear, "POST", "/me", { cookie: riley, body: { name: "Riley", tint: "sky" } });
       assert.equal(renamed.json.id, joined.json.id);
       assert.equal(renamed.json.tint, "sky");
-      const [payload, sig] = meera.slice("dogear_user=".length).split(".");
+      const [payload, sig] = riley.slice("dogear_user=".length).split(".");
       const forged = Buffer.from(JSON.stringify({ id: "u-boss", name: "Boss", admin: true })).toString("base64url");
       assert.equal((await call(dogear, "GET", "/me", { cookie: `dogear_user=${forged}.${sig}` })).status, 401);
       assert.equal((await call(dogear, "GET", "/me", { cookie: `dogear_user=${payload}.x${sig}` })).status, 401);
@@ -95,11 +95,11 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
 
       const thread = await call(dogear, "POST", "", { cookie: renamed.cookie, body: root() });
       assert.equal(thread.status, 201);
-      assert.equal(thread.json.author.name, "Meera");
+      assert.equal(thread.json.author.name, "Riley");
       assert.equal(thread.json.author.tint, "sky");
 
       // Resolving is for the thread's author on a guest site, and only threads resolve.
-      const other = (await call(dogear, "POST", "/me", { body: { name: "Kabir" }, ip: "198.51.100.7" })).cookie!;
+      const other = (await call(dogear, "POST", "/me", { body: { name: "Sam" }, ip: "198.51.100.7" })).cookie!;
       const reply = await call(dogear, "POST", "", {
         cookie: other,
         ip: "198.51.100.7",
@@ -131,7 +131,7 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
         name: "Harsh",
         admin: true,
       });
-      const guest = (await call(dogear, "POST", "/me", { body: { name: "Meera" } })).cookie!;
+      const guest = (await call(dogear, "POST", "/me", { body: { name: "Riley" } })).cookie!;
       const thread = await call(dogear, "POST", "", { cookie: guest, body: root() });
       assert.equal((await call(dogear, "DELETE", `/${thread.json.id}`, { cookie: signedIn.cookie })).status, 200);
       await store.done?.();
@@ -143,43 +143,43 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
         store,
         auth,
         agentToken: "agent-token",
-        canSee: (user, page) => !page.startsWith("/internal") || user?.id === "u-asha" || !!user?.admin,
+        canSee: (user, page) => !page.startsWith("/internal") || user?.id === "u-alex" || !!user?.admin,
       });
-      const me = await call(dogear, "GET", "/me", { user: "asha" });
-      assert.deepEqual(me.json, { ...PEOPLE.asha, handle: "asha.rao" }, "you see your own email; nobody else does");
+      const me = await call(dogear, "GET", "/me", { user: "alex" });
+      assert.deepEqual(me.json, { ...PEOPLE.alex, handle: "alex.doe" }, "you see your own email; nobody else does");
       assert.equal((await call(dogear, "GET", "/me")).status, 401);
-      assert.equal((await call(dogear, "POST", "/me", { user: "asha", body: { name: "Someone" } })).json.name, "Asha Rao");
+      assert.equal((await call(dogear, "POST", "/me", { user: "alex", body: { name: "Someone" } })).json.name, "Alex Doe");
 
-      const thread = await call(dogear, "POST", "", { user: "asha", body: root("/pricing?tab=a") });
+      const thread = await call(dogear, "POST", "", { user: "alex", body: root("/pricing?tab=a") });
       assert.equal(thread.status, 201);
-      assert.equal(thread.json.author.avatar, PEOPLE.asha.avatar);
+      assert.equal(thread.json.author.avatar, PEOPLE.alex.avatar);
       assert.equal(thread.json.author.email, undefined, "an email never goes on a comment");
-      const secret = await call(dogear, "POST", "", { user: "asha", body: root("/internal/roadmap") });
-      assert.equal((await call(dogear, "POST", "", { user: "kabir", body: root("/internal/x") })).status, 403);
+      const secret = await call(dogear, "POST", "", { user: "alex", body: root("/internal/roadmap") });
+      assert.equal((await call(dogear, "POST", "", { user: "sam", body: root("/internal/x") })).status, 403);
 
-      // Kabir can't see /internal at all: not in a list, not in ?all=1, not by id.
-      assert.equal((await call(dogear, "GET", "?path=/internal/roadmap", { user: "kabir" })).status, 403);
+      // Sam can't see /internal at all: not in a list, not in ?all=1, not by id.
+      assert.equal((await call(dogear, "GET", "?path=/internal/roadmap", { user: "sam" })).status, 403);
       assert.deepEqual(
-        (await call(dogear, "GET", "?all=1", { user: "kabir" })).json.map((c: Comment) => c.id),
+        (await call(dogear, "GET", "?all=1", { user: "sam" })).json.map((c: Comment) => c.id),
         [thread.json.id],
       );
       assert.equal((await call(dogear, "GET", "?all=1", { user: "boss" })).json.length, 2);
-      assert.equal((await call(dogear, "PATCH", `/${secret.json.id}`, { user: "kabir", body: { resolved: true } })).status, 404);
+      assert.equal((await call(dogear, "PATCH", `/${secret.json.id}`, { user: "sam", body: { resolved: true } })).status, 404);
       assert.equal(
         (await call(dogear, "POST", "", {
-          user: "kabir",
+          user: "sam",
           body: { page: "/pricing", body: "sneaky", parentId: secret.json.id, anchor: null },
         })).status,
         404,
       );
 
       // Anyone signed in resolves; only the author edits; the author or an admin deletes.
-      assert.equal((await call(dogear, "PATCH", `/${thread.json.id}`, { user: "kabir", body: { resolved: true } })).status, 200);
-      assert.equal((await call(dogear, "PATCH", `/${thread.json.id}`, { user: "kabir", body: { body: "mine now" } })).status, 403);
-      const edited = await call(dogear, "PATCH", `/${thread.json.id}`, { user: "asha", body: { body: "Much too small" } });
+      assert.equal((await call(dogear, "PATCH", `/${thread.json.id}`, { user: "sam", body: { resolved: true } })).status, 200);
+      assert.equal((await call(dogear, "PATCH", `/${thread.json.id}`, { user: "sam", body: { body: "mine now" } })).status, 403);
+      const edited = await call(dogear, "PATCH", `/${thread.json.id}`, { user: "alex", body: { body: "Much too small" } });
       assert.equal(edited.json.body, "Much too small");
       assert.ok(edited.json.editedAt >= edited.json.createdAt);
-      assert.equal((await call(dogear, "DELETE", `/${thread.json.id}`, { user: "kabir" })).status, 403);
+      assert.equal((await call(dogear, "DELETE", `/${thread.json.id}`, { user: "sam" })).status, 403);
 
       // The agent: by token, replies and resolves, never deletes. A wrong token is refused.
       const agentReply = await call(dogear, "POST", "", {
@@ -188,12 +188,12 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
       });
       assert.equal(agentReply.json.author.agent, true);
       assert.equal((await call(dogear, "DELETE", `/${agentReply.json.id}`, { token: "agent-token" })).status, 403);
-      assert.equal((await call(dogear, "GET", "/me", { token: "guess", user: "asha" })).status, 401);
+      assert.equal((await call(dogear, "GET", "/me", { token: "guess", user: "alex" })).status, 401);
 
       // A thread goes with its replies.
       const deleted = await call(dogear, "DELETE", `/${thread.json.id}`, { user: "boss" });
       assert.deepEqual([...deleted.json.deleted].sort(), [thread.json.id, agentReply.json.id].sort());
-      assert.deepEqual((await call(dogear, "GET", "?path=/pricing", { user: "asha" })).json, []);
+      assert.deepEqual((await call(dogear, "GET", "?path=/pricing", { user: "alex" })).json, []);
       await store.done?.();
     });
 
@@ -204,46 +204,46 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
         auth,
         guests: true,
         secret: SECRET,
-        canSee: (user, page) => !page.startsWith("/internal") || user?.id === "u-asha" || !!user?.admin,
+        canSee: (user, page) => !page.startsWith("/internal") || user?.id === "u-alex" || !!user?.admin,
       });
       // Only people who have signed in can be mentioned, so everyone looks once.
-      for (const who of ["asha", "kabir", "boss"]) await call(dogear, "GET", "/me", { user: who });
+      for (const who of ["alex", "sam", "boss"]) await call(dogear, "GET", "/me", { user: who });
 
-      const people = await call(dogear, "GET", "/people", { user: "asha" });
+      const people = await call(dogear, "GET", "/people", { user: "alex" });
       assert.deepEqual(people.json, [
         { id: "u-boss", name: "Boss", handle: "the-boss" },
-        { id: "u-kabir", name: "Kabir", handle: "kabir" },
+        { id: "u-sam", name: "Sam", handle: "sam" },
       ]);
       assert.equal((await call(dogear, "GET", "/people")).status, 403);
-      const guest = (await call(dogear, "POST", "/me", { body: { name: "Meera" } })).cookie!;
+      const guest = (await call(dogear, "POST", "/me", { body: { name: "Riley" } })).cookie!;
       assert.equal((await call(dogear, "GET", "/people", { cookie: guest })).status, 403);
 
       const open = await call(dogear, "POST", "", {
-        user: "asha",
-        body: root("/pricing", "@Kabir and @the-boss, see this. Not @nobody, not @asha.rao, not me@kabir.com"),
+        user: "alex",
+        body: root("/pricing", "@Sam and @the-boss, see this. Not @nobody, not @alex.doe, not me@sam.com"),
       });
       assert.deepEqual(open.json.mentions, [
-        { id: "u-kabir", name: "Kabir", handle: "kabir" },
+        { id: "u-sam", name: "Sam", handle: "sam" },
         { id: "u-boss", name: "Boss", handle: "the-boss" },
       ]);
       assert.equal(open.json.skipped, undefined);
 
-      // Kabir can't open /internal: he's skipped, by name, and not mentioned.
-      const internal = await call(dogear, "POST", "", { user: "asha", body: root("/internal/plan", "@kabir @the-boss ok?") });
+      // Sam can't open /internal: he's skipped, by name, and not mentioned.
+      const internal = await call(dogear, "POST", "", { user: "alex", body: root("/internal/plan", "@sam @the-boss ok?") });
       assert.deepEqual(internal.json.mentions.map((m: { id: string }) => m.id), ["u-boss"]);
-      assert.deepEqual(internal.json.skipped, ["Kabir"]);
-      assert.equal((await call(dogear, "GET", "?path=/internal/plan", { user: "asha" })).json[0].skipped, undefined);
+      assert.deepEqual(internal.json.skipped, ["Sam"]);
+      assert.equal((await call(dogear, "GET", "?path=/internal/plan", { user: "alex" })).json[0].skipped, undefined);
 
       // A guest can't ping anyone.
-      const fromGuest = await call(dogear, "POST", "", { cookie: guest, body: root("/pricing", "hey @kabir") });
+      const fromGuest = await call(dogear, "POST", "", { cookie: guest, body: root("/pricing", "hey @sam") });
       assert.equal(fromGuest.json.mentions, undefined);
 
       // Editing says again who's mentioned; it's kept with the comment.
-      const edited = await call(dogear, "PATCH", `/${open.json.id}`, { user: "asha", body: { body: "Only @the-boss now" } });
+      const edited = await call(dogear, "PATCH", `/${open.json.id}`, { user: "alex", body: { body: "Only @the-boss now" } });
       assert.deepEqual(edited.json.mentions.map((m: { id: string }) => m.id), ["u-boss"]);
-      const listed = (await call(dogear, "GET", "?path=/pricing", { user: "kabir" })).json as Comment[];
+      const listed = (await call(dogear, "GET", "?path=/pricing", { user: "sam" })).json as Comment[];
       assert.deepEqual(listed.find((c) => c.id === open.json.id)!.mentions!.map((m) => m.handle), ["the-boss"]);
-      assert.equal((await call(dogear, "PATCH", `/${open.json.id}`, { user: "asha", body: { body: "Nobody" } })).json.mentions, undefined);
+      assert.equal((await call(dogear, "PATCH", `/${open.json.id}`, { user: "alex", body: { body: "Nobody" } })).json.mentions, undefined);
       await store.done?.();
     });
 
@@ -256,10 +256,10 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
         secret: SECRET,
         moderate: async (text) => (/rude/i.test(text) ? { ok: false, message: "Let's keep it kind." } : { ok: true }),
       });
-      const rude = await call(dogear, "POST", "", { user: "asha", body: root("/", "so rude") });
+      const rude = await call(dogear, "POST", "", { user: "alex", body: root("/", "so rude") });
       assert.deepEqual([rude.status, rude.json], [422, { error: "Let's keep it kind." }]);
-      const fine = await call(dogear, "POST", "", { user: "asha", body: root("/", "lovely") });
-      assert.equal((await call(dogear, "PATCH", `/${fine.json.id}`, { user: "asha", body: { body: "rude now" } })).status, 422);
+      const fine = await call(dogear, "POST", "", { user: "alex", body: root("/", "lovely") });
+      assert.equal((await call(dogear, "PATCH", `/${fine.json.id}`, { user: "alex", body: { body: "rude now" } })).status, 422);
       assert.equal((await call(dogear, "POST", "/me", { body: { name: "Rude Dude" } })).status, 422);
       assert.equal((await call(dogear, "POST", "", { user: "boss", body: root("/", "rude but admin") })).status, 201);
       await store.done?.();
@@ -271,9 +271,9 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
       const events: Created[] = [];
       const pages: [string | null, string, boolean][] = [];
       const directory = {
-        list: async () => [{ id: "u-asha", name: "Asha Rao", handle: "asha", email: "asha.rao@acme.test" }],
+        list: async () => [{ id: "u-alex", name: "Alex Doe", handle: "alex", email: "alex.doe@acme.test" }],
         find: async (handle: string) =>
-          handle === "zoya" ? { id: "zoya@acme.test", name: "zoya", handle: "zoya", email: "zoya@acme.test" } : null,
+          handle === "casey" ? { id: "casey@acme.test", name: "casey", handle: "casey", email: "casey@acme.test" } : null,
       };
       const dogear = createDogear({
         store,
@@ -282,7 +282,7 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
         linkParam: "comment",
         defer: (task) => void deferred.push(task),
         onCreated: (event) => void events.push(event),
-        // Kabir only sees /pricing when his request carries the view cookie; nobody mentioned sees /secret.
+        // Sam only sees /pricing when his request carries the view cookie; nobody mentioned sees /secret.
         canSee: (user, page, request) => {
           pages.push([user?.id ?? null, page, Boolean(request)]);
           if (page === "/secret") return Boolean(request);
@@ -290,21 +290,21 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
         },
         deletable: (user, comment) => comment.author.id === user.id || comment.author.name === "Scout",
       });
-      const thread = await call(dogear, "POST", "", { user: "kabir", body: root("/pricing", "@asha @zoya @nobody look") });
+      const thread = await call(dogear, "POST", "", { user: "sam", body: root("/pricing", "@alex @casey @nobody look") });
       assert.equal(thread.status, 201);
-      assert.deepEqual(thread.json.mentions.map((m: { handle: string }) => m.handle), ["asha", "zoya"]);
+      assert.deepEqual(thread.json.mentions.map((m: { handle: string }) => m.handle), ["alex", "casey"]);
       assert.equal(events.length, 0, "nothing runs until the deferred work does");
       await Promise.all(deferred.splice(0).map((task) => task()));
       assert.equal(events.length, 1);
       assert.equal(events[0].link, `${ORIGIN}/pricing?comment=${thread.json.id}`);
-      assert.deepEqual(events[0].mentioned.map((p) => p.email), ["asha.rao@acme.test", "zoya@acme.test"]);
-      assert.equal(events[0].author.email, "kabir@acme.test");
+      assert.deepEqual(events[0].mentioned.map((p) => p.email), ["alex.doe@acme.test", "casey@acme.test"]);
+      assert.equal(events[0].author.email, "sam@acme.test");
       assert.deepEqual(events[0].thread.map((c) => c.id), [thread.json.id]);
-      assert.ok(pages.some(([who, , withRequest]) => who === "u-kabir" && withRequest), "the writer is asked with the request");
-      assert.ok(pages.some(([who, , withRequest]) => who === "u-asha" && !withRequest), "someone mentioned is asked without it");
+      assert.ok(pages.some(([who, , withRequest]) => who === "u-sam" && withRequest), "the writer is asked with the request");
+      assert.ok(pages.some(([who, , withRequest]) => who === "u-alex" && !withRequest), "someone mentioned is asked without it");
 
       const reply = await call(dogear, "POST", "", {
-        user: "asha",
+        user: "alex",
         body: { page: "/pricing", body: "on it", parentId: thread.json.id, anchor: null },
       });
       await Promise.all(deferred.splice(0).map((task) => task()));
@@ -313,22 +313,22 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
       assert.deepEqual(events[1].mentioned, []);
 
       // Someone mentioned who can't open the page is skipped, and the writer is told.
-      const hidden = await call(dogear, "POST", "", { user: "kabir", body: root("/secret", "@asha see") });
+      const hidden = await call(dogear, "POST", "", { user: "sam", body: root("/secret", "@alex see") });
       assert.equal(hidden.status, 201);
       assert.equal(hidden.json.mentions, undefined);
-      assert.deepEqual(hidden.json.skipped, ["Asha Rao"]);
+      assert.deepEqual(hidden.json.skipped, ["Alex Doe"]);
       await Promise.all(deferred.splice(0).map((task) => task()));
       assert.deepEqual(events[2].mentioned, []);
 
       // The directory is the @ list, and nobody is copied into the store's people.
-      const people = (await call(dogear, "GET", "/people", { user: "kabir" })).json;
-      assert.deepEqual(people.map((p: { handle: string }) => p.handle), ["asha"]);
+      const people = (await call(dogear, "GET", "/people", { user: "sam" })).json;
+      assert.deepEqual(people.map((p: { handle: string }) => p.handle), ["alex"]);
       assert.deepEqual(await store.people(), []);
 
-      // deletable: Asha can't delete Kabir's thread, but anyone may delete what the policy allows.
-      assert.equal((await call(dogear, "DELETE", `/${thread.json.id}`, { user: "asha" })).status, 403);
-      assert.equal((await call(dogear, "DELETE", `/${reply.json.id}`, { user: "kabir" })).status, 403, "Kabir wrote the thread, not the reply");
-      assert.equal((await call(dogear, "DELETE", `/${reply.json.id}`, { user: "asha" })).status, 200);
+      // deletable: Alex can't delete Sam's thread, but anyone may delete what the policy allows.
+      assert.equal((await call(dogear, "DELETE", `/${thread.json.id}`, { user: "alex" })).status, 403);
+      assert.equal((await call(dogear, "DELETE", `/${reply.json.id}`, { user: "sam" })).status, 403, "Sam wrote the thread, not the reply");
+      assert.equal((await call(dogear, "DELETE", `/${reply.json.id}`, { user: "alex" })).status, 200);
 
       // A hook that throws is reported; the comment stays saved.
       const errors: unknown[] = [];
@@ -341,10 +341,10 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
         },
         defer: (task) => void deferred.push(task),
       });
-      assert.equal((await call(failing, "POST", "", { user: "kabir", body: root("/b") })).status, 201);
+      assert.equal((await call(failing, "POST", "", { user: "sam", body: root("/b") })).status, 201);
       await Promise.all(deferred.splice(0).map((task) => task()));
       assert.equal(errors.length, 1);
-      assert.equal((await call(failing, "GET", "?path=/b", { user: "kabir" })).json.length, 1);
+      assert.equal((await call(failing, "GET", "?path=/b", { user: "sam" })).json.length, 1);
       await store.done?.();
     });
 
@@ -352,18 +352,18 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
       const store = await makeStore();
       const dogear = createDogear({ store, auth });
       const state = { key: "setup:stripe", data: { step: 3, name: "Acme", nested: { on: true } } };
-      const made = await call(dogear, "POST", "", { user: "asha", body: { ...root("/setup/3"), state } });
+      const made = await call(dogear, "POST", "", { user: "alex", body: { ...root("/setup/3"), state } });
       assert.equal(made.status, 201);
       assert.deepEqual(made.json.state, state);
-      const [listed] = (await call(dogear, "GET", "?path=/setup/3", { user: "kabir" })).json as Comment[];
+      const [listed] = (await call(dogear, "GET", "?path=/setup/3", { user: "sam" })).json as Comment[];
       assert.deepEqual(listed.state, state);
-      const everywhere = (await call(dogear, "GET", "?all=1", { user: "kabir" })).json as Comment[];
+      const everywhere = (await call(dogear, "GET", "?all=1", { user: "sam" })).json as Comment[];
       assert.equal(everywhere.length, 1);
       assert.equal("state" in everywhere[0], false);
-      const plain = await call(dogear, "POST", "", { user: "asha", body: root("/setup/3", "no form") });
+      const plain = await call(dogear, "POST", "", { user: "alex", body: root("/setup/3", "no form") });
       assert.equal("state" in plain.json, false);
       const reply = { page: "/setup/3", body: "hm", parentId: made.json.id, anchor: null, state };
-      assert.equal((await call(dogear, "POST", "", { user: "kabir", body: reply })).status, 400);
+      assert.equal((await call(dogear, "POST", "", { user: "sam", body: reply })).status, 400);
       await store.done?.();
     });
 
@@ -371,27 +371,27 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
       const store = await makeStore();
       const dogear = createDogear({ store, auth, canSee: (user, page) => page !== "/boss-only" || Boolean(user?.admin) });
       // Everyone signs in once, so they can be mentioned.
-      for (const who of ["asha", "kabir", "boss"]) await call(dogear, "GET", "/me", { user: who });
-      const first = await call(dogear, "POST", "", { user: "asha", body: { ...root("/a", "@kabir look"), state: { key: "f", data: { a: 1 } } } });
-      await call(dogear, "POST", "", { user: "asha", body: root("/b", "nothing for kabir") });
+      for (const who of ["alex", "sam", "boss"]) await call(dogear, "GET", "/me", { user: who });
+      const first = await call(dogear, "POST", "", { user: "alex", body: { ...root("/a", "@sam look"), state: { key: "f", data: { a: 1 } } } });
+      await call(dogear, "POST", "", { user: "alex", body: root("/b", "nothing for sam") });
       const reply = await call(dogear, "POST", "", {
         user: "boss",
-        body: { page: "/a", body: "@kabir and @asha.rao, agreed", parentId: first.json.id, anchor: null },
+        body: { page: "/a", body: "@sam and @alex.doe, agreed", parentId: first.json.id, anchor: null },
       });
-      await call(dogear, "POST", "", { user: "kabir", body: root("/c", "@kabir talking to myself") });
+      await call(dogear, "POST", "", { user: "sam", body: root("/c", "@sam talking to myself") });
       // Mentioned where he can't open the page: never his to see.
-      await call(dogear, "POST", "", { user: "boss", body: root("/boss-only", "@kabir secret") });
+      await call(dogear, "POST", "", { user: "boss", body: root("/boss-only", "@sam secret") });
 
-      const mine = await call(dogear, "GET", "/mentions", { user: "kabir" });
+      const mine = await call(dogear, "GET", "/mentions", { user: "sam" });
       assert.equal(mine.status, 200);
       assert.deepEqual(mine.json.map((c: Comment) => c.id), [reply.json.id, first.json.id]);
       assert.equal("state" in mine.json[1], false, "no forms in the list");
-      assert.deepEqual((await call(dogear, "GET", "/mentions", { user: "asha" })).json.map((c: Comment) => c.id), [reply.json.id]);
+      assert.deepEqual((await call(dogear, "GET", "/mentions", { user: "alex" })).json.map((c: Comment) => c.id), [reply.json.id]);
       assert.equal((await call(dogear, "GET", "/mentions")).status, 401);
 
       // Edited so it no longer mentions him: gone from his list.
-      await call(dogear, "PATCH", `/${reply.json.id}`, { user: "boss", body: { body: "@asha.rao agreed" } });
-      assert.deepEqual((await call(dogear, "GET", "/mentions", { user: "kabir" })).json.map((c: Comment) => c.id), [first.json.id]);
+      await call(dogear, "PATCH", `/${reply.json.id}`, { user: "boss", body: { body: "@alex.doe agreed" } });
+      assert.deepEqual((await call(dogear, "GET", "/mentions", { user: "sam" })).json.map((c: Comment) => c.id), [first.json.id]);
       await store.done?.();
     });
 
@@ -402,7 +402,7 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
         while (deferred.length) await deferred.shift()!();
       };
       const asked: string[][] = [];
-      let reply: string | null = "Looks right to me, @kabir can confirm.";
+      let reply: string | null = "Looks right to me, @sam can confirm.";
       const dogear = createDogear({
         store,
         auth,
@@ -417,23 +417,23 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
           },
         },
       });
-      await call(dogear, "GET", "/me", { user: "kabir" });
-      const people = (await call(dogear, "GET", "/people", { user: "asha" })).json;
+      await call(dogear, "GET", "/me", { user: "sam" });
+      const people = (await call(dogear, "GET", "/people", { user: "alex" })).json;
       assert.deepEqual(people.at(-1), { id: "assistant:scout", name: "Scout", handle: "scout", agent: true, answers: "threads" });
 
-      const thread = await call(dogear, "POST", "", { user: "asha", body: root("/p", "Is this price right?") });
+      const thread = await call(dogear, "POST", "", { user: "alex", body: root("/p", "Is this price right?") });
       assert.equal(asked.length, 0, "not before the response");
       await run();
       assert.deepEqual(asked[0], ["Is this price right?", `${ORIGIN}/p?dogear=${thread.json.id}`]);
-      let list = (await call(dogear, "GET", "?path=/p", { user: "asha" })).json as Comment[];
+      let list = (await call(dogear, "GET", "?path=/p", { user: "alex" })).json as Comment[];
       assert.equal(list.length, 2);
       assert.deepEqual(list[1].author, { id: "assistant:scout", name: "Scout", agent: true });
       assert.equal(list[1].parentId, thread.json.id);
-      assert.deepEqual(list[1].mentions, [{ id: "u-kabir", name: "Kabir", handle: "kabir" }], "it can mention people");
+      assert.deepEqual(list[1].mentions, [{ id: "u-sam", name: "Sam", handle: "sam" }], "it can mention people");
 
       // A reply that doesn't ask is left alone; one that does (by alias, too) is answered.
       const reply1 = (body: string) =>
-        call(dogear, "POST", "", { user: "asha", body: { page: "/p", body, parentId: thread.json.id, anchor: null } });
+        call(dogear, "POST", "", { user: "alex", body: { page: "/p", body, parentId: thread.json.id, anchor: null } });
       await reply1("thanks");
       await run();
       assert.equal(asked.length, 1);
@@ -441,7 +441,7 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
       assert.deepEqual(called.json.mentions, [{ id: "assistant:scout", name: "Scout", handle: "claude" }]);
       reply = "x".repeat(2500);
       await run();
-      list = (await call(dogear, "GET", "?path=/p", { user: "asha" })).json as Comment[];
+      list = (await call(dogear, "GET", "?path=/p", { user: "alex" })).json as Comment[];
       assert.equal(list.at(-1)!.body.length, 2000, "cut to fit");
       assert.ok(list.at(-1)!.body.endsWith("…"));
       // Two answers is its most here.
@@ -451,10 +451,10 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
 
       // Staying quiet saves nothing; the agent token's comments are never answered.
       reply = null;
-      await call(dogear, "POST", "", { user: "kabir", body: root("/q", "hello") });
+      await call(dogear, "POST", "", { user: "sam", body: root("/q", "hello") });
       await run();
       assert.equal(asked.length, 3);
-      assert.equal((await call(dogear, "GET", "?path=/q", { user: "kabir" })).json.length, 1);
+      assert.equal((await call(dogear, "GET", "?path=/q", { user: "sam" })).json.length, 1);
       await store.done?.();
     });
 
@@ -469,9 +469,9 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
         defer: (task) => void deferred.push(task),
         assistant: { name: "Ask Me", answers: "mentions", answer: async () => (asked++, "Here.") },
       });
-      assert.equal((await call(dogear, "GET", "/people", { user: "asha" })).json.at(-1).answers, "mentions");
-      await call(dogear, "POST", "", { user: "asha", body: root("/p", "Just a note") });
-      await call(dogear, "POST", "", { user: "asha", body: root("/p", "@ask-me what is this?") });
+      assert.equal((await call(dogear, "GET", "/people", { user: "alex" })).json.at(-1).answers, "mentions");
+      await call(dogear, "POST", "", { user: "alex", body: root("/p", "Just a note") });
+      await call(dogear, "POST", "", { user: "alex", body: root("/p", "@ask-me what is this?") });
       await call(dogear, "POST", "", { token: "agent-token", body: root("/p", "@ask-me from the coding agent") });
       for (const task of deferred) await task();
       assert.equal(asked, 1);
@@ -481,17 +481,17 @@ function suite(name: string, makeStore: () => Promise<Store & { done?: () => Pro
     test("reactions: one each, all of them counted when people react at once", async () => {
       const store = await makeStore();
       const dogear = createDogear({ store, auth, agentToken: "agent-token" });
-      const thread = await call(dogear, "POST", "", { user: "asha", body: root() });
+      const thread = await call(dogear, "POST", "", { user: "alex", body: root() });
       const react = (user: string, emoji: string) =>
         call(dogear, "POST", `/${thread.json.id}/reactions`, { user, body: { emoji } });
-      assert.deepEqual((await react("asha", "🔥")).json.reactions, { "🔥": ["u-asha"] });
-      assert.deepEqual((await react("asha", "🔥")).json.reactions ?? {}, {});
-      assert.equal((await react("asha", "lol")).status, 400);
+      assert.deepEqual((await react("alex", "🔥")).json.reactions, { "🔥": ["u-alex"] });
+      assert.deepEqual((await react("alex", "🔥")).json.reactions ?? {}, {});
+      assert.equal((await react("alex", "lol")).status, 400);
       assert.equal((await call(dogear, "POST", `/${thread.json.id}/reactions`, { body: { emoji: "🔥" } })).status, 401);
-      await Promise.all(["asha", "kabir", "boss"].map((who) => react(who, "👀")));
-      const [after] = (await call(dogear, "GET", "?path=/pricing", { user: "asha" })).json as Comment[];
-      assert.deepEqual([...after.reactions!["👀"]].sort(), ["u-asha", "u-boss", "u-kabir"]);
-      assert.equal((await call(dogear, "POST", "/nope/reactions", { user: "asha", body: { emoji: "🔥" } })).status, 404);
+      await Promise.all(["alex", "sam", "boss"].map((who) => react(who, "👀")));
+      const [after] = (await call(dogear, "GET", "?path=/pricing", { user: "alex" })).json as Comment[];
+      assert.deepEqual([...after.reactions!["👀"]].sort(), ["u-alex", "u-boss", "u-sam"]);
+      assert.equal((await call(dogear, "POST", "/nope/reactions", { user: "alex", body: { emoji: "🔥" } })).status, 404);
       await store.done?.();
     });
   });
@@ -511,7 +511,7 @@ test("a store that fails answers 503, and is set up again on the next request", 
   assert.equal(errors.length, 1);
   assert.equal((await call(dogear, "GET", "?path=/")).status, 200);
   const signedIn = createDogear({ store: memoryStore(), auth });
-  assert.equal((await call(signedIn, "POST", "", { user: "asha", body: "{nope" })).status, 400);
+  assert.equal((await call(signedIn, "POST", "", { user: "alex", body: "{nope" })).status, 400);
 });
 
 suite("memoryStore", async () => memoryStore());

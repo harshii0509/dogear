@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- **The README shows Dogear at work:** a short clip of the widget, and animated diagrams of how
+  the pieces fit (`media/`, not in the npm package). Example people are dummy names throughout.
+- **Setting up with a coding agent:** the prompt now lives in the README ("Set it up with your
+  coding agent"), written as your own request. It covers `createDogear`, guests and the MCP, and
+  ends with a list of what's left for you. `SETUP_PROMPT.md` is gone.
+
 ## 0.5.1 — 2026-10-20
 
 ### Changed
@@ -46,7 +55,7 @@
   matches the server's, e.g. anyone may delete the assistant's replies.
 - **Comments that remember a form.** `useDogearSnapshot(key, state, restore)` registers a form;
   a thread started while it's on screen saves it (`Comment.state`, up to 64 KB of JSON, roots
-  only), and opening the thread puts it back, with a "Showing Asha's form · Back to my form"
+  only), and opening the thread puts it back, with a "Showing Alex's form · Back to my form"
   banner. `peekSnapshot(key)` fills a form in as it mounts, for threads opened from another page.
   Postgres gains a `state jsonb` column (added on start); `?all=1` leaves it out.
 - **Alerts outside the page.** `notify: [webhook({ url, secret })]`. `webhook()` POSTs the new
@@ -54,7 +63,7 @@
   own, tried once more after a blip; a `Notifier` of your own is any `(event) => Promise<void>`.
 - **Mention alerts in the app.** `GET /mentions` (and `Adapter.mentions`) lists where you were
   @mentioned, on pages you can open. The widget asks every 15 seconds while the tab is visible and
-  says so: "Asha mentioned you on Pricing", with View, which opens the thread wherever it is. The
+  says so: "Alex mentioned you on Pricing", with View, which opens the thread wherever it is. The
   tray's pill shows `@2` for unread ones, and an `@` in its head narrows the list to them. Seen
   ones are kept in this browser. Postgres indexes `mentions` for it.
 - **A dock layout.** `layout="dock"`: a round button with every page's open count, which the

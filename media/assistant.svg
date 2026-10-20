@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 470" width="1200" height="470" role="img" aria-labelledby="title desc">
+<title id="title">An assistant that answers in the thread</title>
+<desc id="desc">When a thread starts, or someone mentions the assistant, Dogear calls your answer function after the response. Your model and your docs write the reply; Dogear saves it in the thread, marked as AI.</desc>
+<style>
+  :root { --canvas: #ffffff; --dot: #d7d8dd; --frame: #dcdde2; --tile: #f1f1f3; --tile-line: #d2d3d8;
+    --ink: #15161a; --label: #5c5e66; --muted: #8a8c94; --wire: #b5b7bf; --accent: #2457e6;
+    --on-accent: #ffffff; }
+  @media (prefers-color-scheme: dark) {
+    :root { --canvas: #111216; --dot: #272930; --frame: #2a2c33; --tile: #191a20; --tile-line: #33353d;
+      --ink: #ecedf0; --label: #a3a5ae; --muted: #6f717a; --wire: #4a4c55; --accent: #5a85ff; }
+  }
+  .bg { fill: var(--canvas); }
+  .dot { fill: var(--dot); }
+  .frame { fill: none; stroke: var(--frame); }
+  .grp { fill: none; stroke: var(--tile-line); }
+  .grp.dash { stroke-dasharray: 5 5; }
+  .grp.accent { stroke: var(--accent); stroke-opacity: 0.55; }
+  .tile { fill: var(--tile); stroke: var(--tile-line); }
+  .tile.sel { stroke: var(--accent); stroke-width: 1.5; }
+  .tile.on { fill: var(--accent); stroke: var(--accent); }
+  .node.off { opacity: 0.5; }
+  .node.off .tile { stroke-dasharray: 4 4; }
+  .ico { fill: none; stroke: var(--ink); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .node.on .ico { stroke: var(--on-accent); }
+  .wire { fill: none; stroke: var(--wire); stroke-width: 1.3; stroke-dasharray: 4 4; }
+  .wire.live { stroke: var(--accent); stroke-opacity: 0.45; }
+  .wire.off { opacity: 0.55; }
+  .pulse { fill: none; stroke: var(--accent); stroke-width: 2.6; stroke-linecap: round; }
+  .t { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    paint-order: stroke; stroke: var(--canvas); stroke-width: 7px; stroke-linejoin: round; }
+  .t-lab { font-size: 13px; letter-spacing: 0.08em; fill: var(--label); }
+  .t-sub { font-size: 12px; fill: var(--accent); }
+  .node.off .t-sub { fill: var(--muted); }
+  .t-grp { font-size: 13px; letter-spacing: 0.08em; fill: var(--ink); }
+  .t-grp.accent { fill: var(--accent); }
+  .t-edge { font-size: 11px; letter-spacing: 0.08em; fill: var(--muted); }
+  .t-note { font-size: 12px; letter-spacing: 0.06em; fill: var(--label); }
+  .t-title { font-size: 15px; letter-spacing: 0.04em; fill: var(--ink); }
+  @media (prefers-reduced-motion: reduce) { .pulse { display: none; } .wire.live { stroke-opacity: 0.8; } }
+  @keyframes p0 { 0%, 0.000% { stroke-dashoffset: 34; } 17.364%, 100% { stroke-dashoffset: -132.0; } }
+  .p0 { stroke-dasharray: 34 200.0; stroke-dashoffset: 34; animation: p0 2276ms linear infinite; }
+  @keyframes p1 { 0%, 13.808% { stroke-dashoffset: 34; } 33.368%, 100% { stroke-dashoffset: -153.0; } }
+  .p1 { stroke-dasharray: 34 221.0; stroke-dashoffset: 34; animation: p1 2276ms linear infinite; }
+  @keyframes p2 { 0%, 29.812% { stroke-dashoffset: 34; } 49.163%, 100% { stroke-dashoffset: -151.0; } }
+  .p2 { stroke-dasharray: 34 219.0; stroke-dashoffset: 34; animation: p2 2276ms linear infinite; }
+  @keyframes p3 { 0%, 45.607% { stroke-dashoffset: 34; } 64.017%, 100% { stroke-dashoffset: -142.0; } }
+  .p3 { stroke-dasharray: 34 210.0; stroke-dashoffset: 34; animation: p3 2276ms linear infinite; }
+</style>
+<defs><pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse"><circle class="dot" cx="11" cy="11" r="1.1"/></pattern></defs>
+<rect class="bg" x="0" y="0" width="1200" height="470"/>
+<rect x="0" y="0" width="1200" height="470" fill="url(#dots)"/>
+<rect class="grp accent" x="466" y="96" width="210" height="230"/>
+<text x="484" y="101" class="t t-grp accent" text-anchor="start">YOUR CODE</text>
+<path class="wire live" d="M154 210 L286 210"/>
+<path class="wire live" d="M374 210 L527 210"/>
+<path class="wire live" d="M615 210 L766 210"/>
+<path class="wire live" d="M854 210 L996 210"/>
+<path class="pulse p0" d="M154 210 L286 210"/><path class="pulse p1" d="M374 210 L527 210"/><path class="pulse p2" d="M615 210 L766 210"/><path class="pulse p3" d="M854 210 L996 210"/>
+<g class="node">
+<rect class="tile" x="66" y="166" width="88" height="88" rx="2"/>
+<g transform="translate(92.6 192.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M4 12a8 8 0 1 1 3.2 6.4L4 20l1-3.6A8 8 0 0 1 4 12z M8.6 12h.01 M12 12h.01 M15.4 12h.01"/></g>
+<text x="110" y="278" class="t t-lab" text-anchor="middle">THREAD</text>
+<text x="110" y="296" class="t t-sub" text-anchor="middle">new, or @scout</text>
+</g>
+<g class="node">
+<rect class="tile" x="286" y="166" width="88" height="88" rx="2"/>
+<g transform="translate(312.6 192.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M8 8l-4 4l4 4 M16 8l4 4l-4 4 M13.5 6l-3 12"/></g>
+<text x="330" y="278" class="t t-lab" text-anchor="middle">DOGEAR</text>
+<text x="330" y="296" class="t t-sub" text-anchor="middle">after the reply</text>
+</g>
+<g class="node on">
+<rect class="tile on" x="527" y="166" width="88" height="88" rx="2"/>
+<g transform="translate(553.6 192.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M12 3.5v3 M7 7.5h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z M9.5 12.5h.01 M14.5 12.5h.01 M9 21h6"/></g>
+<text x="571" y="278" class="t t-lab" text-anchor="middle">answer()</text>
+<text x="571" y="296" class="t t-sub" text-anchor="middle">your model + docs</text>
+</g>
+<g class="node">
+<rect class="tile" x="766" y="166" width="88" height="88" rx="2"/>
+<g transform="translate(792.6 192.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M11 3l1.8 5.2L18 10l-5.2 1.8L11 17l-1.8-5.2L4 10l5.2-1.8z M18 15l.7 1.8l1.8.7l-1.8.7L18 20l-.7-1.8l-1.8-.7l1.8-.7z"/></g>
+<text x="810" y="278" class="t t-lab" text-anchor="middle">REPLY</text>
+<text x="810" y="296" class="t t-sub" text-anchor="middle">marked AI</text>
+</g>
+<g class="node sel">
+<rect class="tile sel" x="996" y="166" width="88" height="88" rx="2"/>
+<g transform="translate(1022.6 192.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M5 4.5h14v6.5H5z M5 13h14v6.5H5z M8.5 7.75h.01 M8.5 16.25h.01 M12 7.75h4 M12 16.25h4"/></g>
+<text x="1040" y="278" class="t t-lab" text-anchor="middle">STORE</text>
+<text x="1040" y="296" class="t t-sub" text-anchor="middle">in the thread</text>
+</g>
+<text x="600" y="400" class="t t-note" text-anchor="middle">&quot;SCOUT IS READING…&quot; WHILE IT WORKS · AT MOST maxReplies A THREAD</text>
+<text x="600" y="428" class="t t-note" text-anchor="middle">RETURN NULL TO STAY QUIET</text>
+<rect class="frame" x="0.5" y="0.5" width="1199" height="469"/>
+</svg>

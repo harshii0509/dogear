@@ -9,7 +9,7 @@ import { DEFAULT_PORT, dataDir, serve } from "./serve";
 const HELP = `dogear: comments on live pages, for people and coding agents
 
 Usage
-  dogear serve [--port 4848] [--file .dogear/comments.json] [--name "Asha" | --guest] [--origin <url>]...
+  dogear serve [--port 4848] [--file .dogear/comments.json] [--name "Alex" | --guest] [--origin <url>]...
       A local comments server for development. --guest starts signed out, so the page asks for
       a name (and avatar) as it would a first-time visitor. Point the page at the endpoint:
       <dogear-comments endpoint="http://127.0.0.1:4848/api/comments">

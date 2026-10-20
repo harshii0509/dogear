@@ -1,11 +1,11 @@
 # Roadmap
 
-v0.1 (the layer, adapters, the contract, SETUP_PROMPT.md, examples) was parked on 2026-09-28 and
+v0.1 (the layer, adapters, the contract, the setup prompt, examples) was parked on 2026-09-28 and
 picked up again on 2026-10-12. v0.2.0, the first release as Dogear, is in CHANGELOG.md.
 
 ## Build next
 - **Notify a channel.** A docs recipe: a webhook to Slack or Teams on a new comment, from the
-  route or a DB trigger. SETUP_PROMPT asks whether you want it. (kalebheitzman/pindrop)
+  route or a DB trigger. The setup prompt could ask whether you want it. (kalebheitzman/pindrop)
 - **Offline retry queue.** A failed post is kept and retried with backoff. (SitePing)
 
 ## Done since v0.1
@@ -24,8 +24,8 @@ picked up again on 2026-10-12. v0.2.0, the first release as Dogear, is in CHANGE
   through open shadow roots (`host >>> inner`).
 
 ## Opt-in: live presence and cursors
-Not built into the default. SETUP_PROMPT asks "Do you want to see who's on the page, and their
-cursors?" If the answer is yes, it explains that **this needs a realtime service connected**
+Not built into the default. The setup prompt could ask "Do you want to see who's on the page, and their
+cursors?" If the answer is yes, it would explain that **this needs a realtime service connected**
 (Supabase Realtime, Liveblocks, PartyKit, Ably/Pusher, or your own WebSocket server), since
 serverless hosts like Vercel can't hold connections open. It then writes the adapter part.
 
@@ -40,7 +40,7 @@ serverless hosts like Vercel can't hold connections open. It then writes the ada
 ## Not doing (and why)
 - **Screenshots, console and network capture, triage inbox (SitePing):** that's bug reporting, a
   different product.
-- **Desktop/mobile boards (reviewplz), 7-locale i18n, CLI `init`/`doctor`:** SETUP_PROMPT does
+- **Desktop/mobile boards (reviewplz), 7-locale i18n, CLI `init`/`doctor`:** the setup prompt does
   the CLI's job. Add i18n on request.
 - **JSON export plus Markdown CLI (pindrop.js):** covered by Copy as Markdown.
 - **Pin numbers:** we show avatars, as Figma does.
@@ -58,5 +58,5 @@ serverless hosts like Vercel can't hold connections open. It then writes the ada
   threads.
 - Paid: Liveblocks Comments, Velt, Vercel Toolbar comments, BugHerd, Marker.io.
 
-What we have that they don't: Figma-level interaction polish, SETUP_PROMPT (agent-driven
+What we have that they don't: Figma-level interaction polish, the setup prompt (agent-driven
 backend setup), cross-tab pins that check the element's text fingerprint, and about 18KB gz.
