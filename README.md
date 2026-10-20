@@ -3,6 +3,10 @@
 Figma-style comments on any web page. Click to drop a pin or drag to mark an area, then write.
 You get threads, replies, edit, resolve, and live updates. It works in plain HTML, React and Next.js.
 
+<p align="center">
+  <img src="media/demo.gif" width="960" alt="A pricing page with Dogear: pressing C, clicking the Start free trial button to pin a comment and posting it, then opening another person's thread, replying, and reacting with a party emoji.">
+</p>
+
 **Bring your own backend, or use ours.** `@harshi04/dogear/server` is the whole backend as one route handler
 over Postgres, a JSON file or memory: it works with nothing but a database, and turns on guests,
 your sign-in, private pages and moderation as you add them. Or give Dogear a five-function adapter
@@ -92,6 +96,40 @@ export const DogearComments = () => <Comments shortcut="c" />;
 ```
 
 With no adapter, comments are stored in this browser's localStorage, which is enough to try it out.
+
+## How it works
+
+**One widget, one route.** The widget on your page talks to a single route that `createDogear`
+makes. The route checks who you are and what you may see, then stores the comment. Everything
+past plain commenting is optional, and switches on when you give it what it needs.
+
+<img src="media/how-it-fits.svg" alt="How Dogear fits together: your page, the widget, one route with optional auth and moderation, a can-see rule, and a store; optional notify and assistant run after the response, and coding agents use the same route over MCP." width="100%">
+
+**Nobody has to sign in.** With `guests: true`, a visitor gives a name the first time and
+comments. The server signs a cookie, so the author never comes from the browser.
+[docs/server.md](docs/server.md)
+
+<img src="media/guests.svg" alt="Guests: a visitor gives a name once, comments, and the route stores it under a signed cookie. Mentions and alerts stay off until you add auth." width="100%">
+
+**Tag someone, and they hear about it.** With your own sign-in, `@` lists the people who can open
+the page. They see it in the app (a toast and an `@` badge), and `notify` can tell them wherever
+your team talks. [Mentions](docs/server.md#mentions) · [Alerts](docs/server.md#alerts)
+
+<img src="media/mentions.svg" alt="Mentions: a tag counts only for someone who has signed in and can open the page; they get an in-app alert and your notifier's message, and open the thread from its link. Anyone else stays plain text, or is skipped and the author is told." width="100%">
+
+**An assistant that answers in the thread.** Give `assistant` your own `answer(thread)`: your
+model, your docs. Dogear decides when to ask and saves the reply, marked as AI.
+[An assistant](docs/server.md#an-assistant)
+
+<img src="media/assistant.svg" alt="The assistant: a new thread or an @mention calls your answer function after the response; the reply is saved in the thread, marked as AI." width="100%">
+
+**From a comment to a fix, and back.** Your coding agent reads the threads over MCP, with each
+element's selector and text, makes the change, then replies and resolves.
+[docs/mcp.md](docs/mcp.md)
+
+<img src="media/mcp.svg" alt="MCP: a reviewer pins a comment on an element; a coding agent picks it up with dogear_next, makes a change for review, replies and resolves, and the reply shows in the thread on the page." width="100%">
+
+The diagrams are drawn by [`media/diagrams.mjs`](media/diagrams.mjs).
 
 ## Pick your backend
 

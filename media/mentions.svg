@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 610" width="1200" height="610" role="img" aria-labelledby="title desc">
+<title id="title">Tag someone, and they hear about it</title>
+<desc id="desc">A tag counts only for someone who has signed in and can open the page. They see it in the app, and your notifier can tell them wherever your team talks. Anyone else stays plain text, or is skipped and the author is told.</desc>
+<style>
+  :root { --canvas: #ffffff; --dot: #d7d8dd; --frame: #dcdde2; --tile: #f1f1f3; --tile-line: #d2d3d8;
+    --ink: #15161a; --label: #5c5e66; --muted: #8a8c94; --wire: #b5b7bf; --accent: #2457e6;
+    --on-accent: #ffffff; }
+  @media (prefers-color-scheme: dark) {
+    :root { --canvas: #111216; --dot: #272930; --frame: #2a2c33; --tile: #191a20; --tile-line: #33353d;
+      --ink: #ecedf0; --label: #a3a5ae; --muted: #6f717a; --wire: #4a4c55; --accent: #5a85ff; }
+  }
+  .bg { fill: var(--canvas); }
+  .dot { fill: var(--dot); }
+  .frame { fill: none; stroke: var(--frame); }
+  .grp { fill: none; stroke: var(--tile-line); }
+  .grp.dash { stroke-dasharray: 5 5; }
+  .grp.accent { stroke: var(--accent); stroke-opacity: 0.55; }
+  .tile { fill: var(--tile); stroke: var(--tile-line); }
+  .tile.sel { stroke: var(--accent); stroke-width: 1.5; }
+  .tile.on { fill: var(--accent); stroke: var(--accent); }
+  .node.off { opacity: 0.5; }
+  .node.off .tile { stroke-dasharray: 4 4; }
+  .ico { fill: none; stroke: var(--ink); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .node.on .ico { stroke: var(--on-accent); }
+  .wire { fill: none; stroke: var(--wire); stroke-width: 1.3; stroke-dasharray: 4 4; }
+  .wire.live { stroke: var(--accent); stroke-opacity: 0.45; }
+  .wire.off { opacity: 0.55; }
+  .pulse { fill: none; stroke: var(--accent); stroke-width: 2.6; stroke-linecap: round; }
+  .t { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    paint-order: stroke; stroke: var(--canvas); stroke-width: 7px; stroke-linejoin: round; }
+  .t-lab { font-size: 13px; letter-spacing: 0.08em; fill: var(--label); }
+  .t-sub { font-size: 12px; fill: var(--accent); }
+  .node.off .t-sub { fill: var(--muted); }
+  .t-grp { font-size: 13px; letter-spacing: 0.08em; fill: var(--ink); }
+  .t-grp.accent { fill: var(--accent); }
+  .t-edge { font-size: 11px; letter-spacing: 0.08em; fill: var(--muted); }
+  .t-note { font-size: 12px; letter-spacing: 0.06em; fill: var(--label); }
+  .t-title { font-size: 15px; letter-spacing: 0.04em; fill: var(--ink); }
+  @media (prefers-reduced-motion: reduce) { .pulse { display: none; } .wire.live { stroke-opacity: 0.8; } }
+  @keyframes p0 { 0%, 0.000% { stroke-dashoffset: 34; } 9.667%, 100% { stroke-dashoffset: -82.0; } }
+  .p0 { stroke-dasharray: 34 150.0; stroke-dashoffset: 34; animation: p0 2857ms linear infinite; }
+  @keyframes p1 { 0%, 6.833% { stroke-dashoffset: 34; } 19.000%, 100% { stroke-dashoffset: -112.0; } }
+  .p1 { stroke-dasharray: 34 180.0; stroke-dashoffset: 34; animation: p1 2857ms linear infinite; }
+  @keyframes p2 { 0%, 16.167% { stroke-dashoffset: 34; } 25.000%, 100% { stroke-dashoffset: -72.0; } }
+  .p2 { stroke-dasharray: 34 140.0; stroke-dashoffset: 34; animation: p2 2857ms linear infinite; }
+  @keyframes p3 { 0%, 22.167% { stroke-dashoffset: 34; } 47.667%, 100% { stroke-dashoffset: -272.0; } }
+  .p3 { stroke-dasharray: 34 340.0; stroke-dashoffset: 34; animation: p3 2857ms linear infinite; }
+  @keyframes p4 { 0%, 44.833% { stroke-dashoffset: 34; } 60.333%, 100% { stroke-dashoffset: -152.0; } }
+  .p4 { stroke-dasharray: 34 220.0; stroke-dashoffset: 34; animation: p4 2857ms linear infinite; }
+  @keyframes p5 { 0%, 57.500% { stroke-dashoffset: 34; } 71.333%, 100% { stroke-dashoffset: -132.0; } }
+  .p5 { stroke-dasharray: 34 200.0; stroke-dashoffset: 34; animation: p5 2857ms linear infinite; }
+</style>
+<defs><pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse"><circle class="dot" cx="11" cy="11" r="1.1"/></pattern></defs>
+<rect class="bg" x="0" y="0" width="1200" height="610"/>
+<rect x="0" y="0" width="1200" height="610" fill="url(#dots)"/>
+<rect class="grp" x="386" y="80" width="330" height="460"/>
+<text x="404" y="85" class="t t-grp" text-anchor="start">WHO GETS IT</text>
+<path class="wire live" d="M144 200 L226 200"/>
+<path class="wire live" d="M314 200 L426 200"/>
+<path class="wire live" d="M514 200 L586 200"/>
+<text x="550" y="192" class="t t-edge" text-anchor="middle">YES</text>
+<path class="wire live" d="M674 200 L744 200 L744 360 L786 360"/>
+<path class="wire live" d="M874 360 L1026 360"/>
+<path class="wire live" d="M1070 316 L1070 184"/>
+<path class="wire" d="M674 200 L744 200 L744 140 L786 140"/>
+<path class="wire" d="M874 140 L1026 140"/>
+<path class="wire off" d="M470 244 L470 376"/>
+<text x="482" y="314" class="t t-edge" text-anchor="start">NO</text>
+<path class="wire off" d="M630 244 L630 376"/>
+<text x="642" y="314" class="t t-edge" text-anchor="start">NO</text>
+<path class="pulse p0" d="M144 200 L226 200"/><path class="pulse p1" d="M314 200 L426 200"/><path class="pulse p2" d="M514 200 L586 200"/><path class="pulse p3" d="M674 200 L744 200 L744 360 L786 360"/><path class="pulse p4" d="M874 360 L1026 360"/><path class="pulse p5" d="M1070 316 L1070 184"/>
+<g class="node">
+<rect class="tile" x="56" y="156" width="88" height="88" rx="2"/>
+<g transform="translate(82.6 182.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M12 12a4 4 0 1 0 0-8a4 4 0 0 0 0 8z M4.5 20.5a7.5 7.5 0 0 1 15 0"/></g>
+<text x="100" y="268" class="t t-lab" text-anchor="middle">AUTHOR</text>
+<text x="100" y="286" class="t t-sub" text-anchor="middle">signed in</text>
+</g>
+<g class="node on">
+<rect class="tile on" x="226" y="156" width="88" height="88" rx="2"/>
+<g transform="translate(252.6 182.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M16 12a4 4 0 1 1-8 0a4 4 0 0 1 8 0z M16 12v1.5a2.5 2.5 0 0 0 5 0V12a9 9 0 1 0-3.5 7.1"/></g>
+<text x="270" y="268" class="t t-lab" text-anchor="middle">@JORDAN</text>
+<text x="270" y="286" class="t t-sub" text-anchor="middle">in a comment</text>
+</g>
+<g class="node">
+<rect class="tile" x="426" y="156" width="88" height="88" rx="2"/>
+<g transform="translate(452.6 182.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M8 5a4 4 0 1 0 0 8a4 4 0 0 0 0-8z M11 12l8 8 M15.5 16.5l2-2 M18 19l1.8-1.8"/></g>
+<text x="470" y="268" class="t t-lab" text-anchor="middle">KNOWN?</text>
+<text x="470" y="286" class="t t-sub" text-anchor="middle">has signed in</text>
+</g>
+<g class="node">
+<rect class="tile" x="586" y="156" width="88" height="88" rx="2"/>
+<g transform="translate(612.6 182.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M2.5 12S6 6 12 6s9.5 6 9.5 6S18 18 12 18s-9.5-6-9.5-6z M12 9.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5z"/></g>
+<text x="630" y="268" class="t t-lab" text-anchor="middle">CAN SEE?</text>
+<text x="630" y="286" class="t t-sub" text-anchor="middle">the page</text>
+</g>
+<g class="node off">
+<rect class="tile" x="426" y="376" width="88" height="88" rx="2"/>
+<g transform="translate(452.6 402.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M16 12a4 4 0 1 1-8 0a4 4 0 0 1 8 0z M16 12v1.5a2.5 2.5 0 0 0 5 0V12a9 9 0 1 0-3.5 7.1"/></g>
+<text x="470" y="488" class="t t-lab" text-anchor="middle">PLAIN TEXT</text>
+<text x="470" y="506" class="t t-sub" text-anchor="middle">@nobody</text>
+</g>
+<g class="node off">
+<rect class="tile" x="586" y="376" width="88" height="88" rx="2"/>
+<g transform="translate(612.6 402.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M2.5 12S6 6 12 6s9.5 6 9.5 6S18 18 12 18s-9.5-6-9.5-6z M12 9.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5z"/></g>
+<text x="630" y="488" class="t t-lab" text-anchor="middle">SKIPPED</text>
+<text x="630" y="506" class="t t-sub" text-anchor="middle">author told</text>
+</g>
+<g class="node sel">
+<rect class="tile sel" x="786" y="96" width="88" height="88" rx="2"/>
+<g transform="translate(812.6 122.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15z M10 20.5a2 2 0 0 0 4 0"/></g>
+<text x="830" y="208" class="t t-lab" text-anchor="middle">IN THE APP</text>
+<text x="830" y="226" class="t t-sub" text-anchor="middle">toast · @ badge</text>
+</g>
+<g class="node sel">
+<rect class="tile sel" x="786" y="316" width="88" height="88" rx="2"/>
+<g transform="translate(812.6 342.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M4 13h4l1.5 3h5l1.5-3h4 M4 13l2.5-8h11L20 13v6H4z M12 12V6.5 M9.5 9L12 6.5L14.5 9"/></g>
+<text x="830" y="428" class="t t-lab" text-anchor="middle">NOTIFY</text>
+<text x="830" y="446" class="t t-sub" text-anchor="middle">webhook · your own</text>
+</g>
+<g class="node">
+<rect class="tile" x="1026" y="96" width="88" height="88" rx="2"/>
+<g transform="translate(1052.6 122.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M12 12a4 4 0 1 0 0-8a4 4 0 0 0 0 8z M4.5 20.5a7.5 7.5 0 0 1 15 0"/></g>
+<text x="1070" y="208" class="t t-lab" text-anchor="middle">JORDAN</text>
+<text x="1070" y="226" class="t t-sub" text-anchor="middle">opens ?comment=id</text>
+</g>
+<g class="node">
+<rect class="tile" x="1026" y="316" width="88" height="88" rx="2"/>
+<g transform="translate(1052.6 342.6) scale(1.45)"><path class="ico" vector-effect="non-scaling-stroke" d="M4 5h16v11H9.5L5 19.5V16H4z M8 9h8 M8 12h5"/></g>
+<text x="1070" y="428" class="t t-lab" text-anchor="middle">YOUR TEAM CHAT</text>
+<text x="1070" y="446" class="t t-sub" text-anchor="middle">or email</text>
+</g>
+<rect class="frame" x="0.5" y="0.5" width="1199" height="609"/>
+</svg>

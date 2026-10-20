@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Changed
+- **The README shows Dogear at work:** a short clip of the widget, and animated diagrams of how
+  the pieces fit (`media/`, not in the npm package). Example people are dummy names throughout.
 - **Setting up with a coding agent:** the prompt now lives in the README ("Set it up with your
   coding agent"), written as your own request. It covers `createDogear`, guests and the MCP, and
   ends with a list of what's left for you. `SETUP_PROMPT.md` is gone.
