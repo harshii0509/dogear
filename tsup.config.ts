@@ -42,6 +42,9 @@ export default defineConfig([
         "react-dom": "preact/compat",
         "react/jsx-runtime": "preact/jsx-runtime",
       };
+      // Bundled dependencies (the emoji picker) read process.env.NODE_ENV, which a browser
+      // doesn't have: without this, opening the picker throws "process is not defined".
+      options.define = { ...options.define, "process.env.NODE_ENV": '"production"' };
     },
   },
 ]);

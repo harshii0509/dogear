@@ -6,20 +6,24 @@
 - **Dogear is made of glass.** The default look is dark glass: black at 64% under a 16px blur, a lit
   edge, white text in four steps, rounder corners. The mark (the pin being placed, the outlines)
   is its own blue, so it shows on any page. A site that set `--dogear-*` keeps what it set.
+- **The README shows Dogear at work:** a short clip of the widget, and animated diagrams of how
+  the pieces fit (`media/`, not in the npm package). Example people are dummy names throughout.
+- **Setting up with a coding agent:** the prompt now lives in the README ("Set it up with your
+  coding agent"), written as your own request. It covers `createDogear`, guests and the MCP, and
+  ends with a list of what's left for you. `SETUP_PROMPT.md` is gone.
 
 ### Added
 - **`theme`: `"dark"` (the default), `"light"` or `"auto"`.** Light is frosted white with dark text;
   auto follows the visitor's system setting. The `theme` attribute can change on a live element,
   for a site's own dark-mode switch.
 
-## Unreleased
-
-### Changed
-- **The README shows Dogear at work:** a short clip of the widget, and animated diagrams of how
-  the pieces fit (`media/`, not in the npm package). Example people are dummy names throughout.
-- **Setting up with a coding agent:** the prompt now lives in the README ("Set it up with your
-  coding agent"), written as your own request. It covers `createDogear`, guests and the MCP, and
-  ends with a list of what's left for you. `SETUP_PROMPT.md` is gone.
+### Fixed
+- **Plain HTML (`element.global.js`): reactions and motion work.** The build left
+  `process.env.NODE_ENV` in place, which a browser doesn't have, so every spring threw: presses
+  and pop-ins never animated, and opening the full emoji picker failed. It's now defined at build
+  time.
+- **The reaction set stays open when you click +.** The + button gives way to the set, and the
+  blur that left behind no longer reads as focus going elsewhere.
 
 ## 0.5.1 — 2026-10-20
 

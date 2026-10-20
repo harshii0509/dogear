@@ -2387,9 +2387,17 @@ function Reactions({ comment, where }: { comment: Comment; where: "list" | "thre
   };
   /** Focus left for somewhere that's neither the row nor its picker: fold it all away. */
   const leave = (next: EventTarget | null) => {
-    const element = next instanceof Element ? next : null;
-    if (rowRef.current?.contains(element) || element?.closest(".pc-emoji")) return;
-    setPicking(null);
+    const inside = (target: EventTarget | null) => {
+      const element = target instanceof Element ? target : null;
+      return Boolean(rowRef.current?.contains(element) || element?.closest(".pc-emoji"));
+    };
+    if (inside(next)) return;
+    // A blur with nowhere to go can be the + button this row has just swapped for the set, so look
+    // again once the set has taken focus: only then is focus really somewhere else.
+    requestAnimationFrame(() => {
+      const root = rowRef.current?.getRootNode() as Document | ShadowRoot | undefined;
+      if (!inside(root?.activeElement ?? null)) setPicking(null);
+    });
   };
 
   return (
