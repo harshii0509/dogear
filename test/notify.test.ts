@@ -13,25 +13,25 @@ const comment: Comment = {
   id: "c1",
   page: "/settings?tab=keys",
   parentId: null,
-  body: "@kabir and @tara.mehta, is this key right?",
-  author: { id: "asha@acme.test", name: "Asha Rao" },
+  body: "@sam and @jordan.lee, is this key right?",
+  author: { id: "alex@acme.test", name: "Alex Doe" },
   anchor,
   createdAt: 1,
   editedAt: null,
   resolved: false,
   mentions: [
-    { id: "kabir@acme.test", name: "Kabir", handle: "kabir" },
-    { id: "tara@acme.test", name: "Tara Mehta", handle: "tara.mehta" },
+    { id: "sam@acme.test", name: "Sam", handle: "sam" },
+    { id: "jordan@acme.test", name: "Jordan Lee", handle: "jordan.lee" },
   ],
   state: { key: "form", data: { secret: "do not send" } },
 };
 const event: Created = {
   comment,
   thread: [comment],
-  author: { id: "asha@acme.test", name: "Asha Rao", email: "asha@acme.test" },
+  author: { id: "alex@acme.test", name: "Alex Doe", email: "alex@acme.test" },
   mentioned: [
-    { id: "kabir@acme.test", name: "Kabir", handle: "kabir", email: "kabir@acme.test" },
-    { id: "tara@acme.test", name: "Tara Mehta", handle: "tara.mehta", email: "tara@acme.test" },
+    { id: "sam@acme.test", name: "Sam", handle: "sam", email: "sam@acme.test" },
+    { id: "jordan@acme.test", name: "Jordan Lee", handle: "jordan.lee", email: "jordan@acme.test" },
     { id: "guest-1", name: "No email", handle: "noemail" },
   ],
   link: "https://site.test/settings?tab=keys&comment=c1",
@@ -82,8 +82,8 @@ test("webhook: posts the event without forms, signed with the secret", async () 
 
 test("the handler runs every notifier and onCreated, each on its own", async () => {
   const people: Record<string, User> = {
-    asha: { id: "asha@acme.test", name: "Asha Rao", email: "asha@acme.test", handle: "asha" },
-    kabir: { id: "kabir@acme.test", name: "Kabir", email: "kabir@acme.test", handle: "kabir" },
+    alex: { id: "alex@acme.test", name: "Alex Doe", email: "alex@acme.test", handle: "alex" },
+    sam: { id: "sam@acme.test", name: "Sam", email: "sam@acme.test", handle: "sam" },
   };
   const deferred: (() => Promise<void>)[] = [];
   const heard: string[] = [];
@@ -106,15 +106,15 @@ test("the handler runs every notifier and onCreated, each on its own", async () 
   const response = await dogear(
     new Request("https://site.test/api/comments", {
       method: "POST",
-      headers: { "content-type": "application/json", "x-user": "asha" },
-      body: JSON.stringify({ page: "/x", body: "@kabir hi", parentId: null, anchor }),
+      headers: { "content-type": "application/json", "x-user": "alex" },
+      body: JSON.stringify({ page: "/x", body: "@sam hi", parentId: null, anchor }),
     }),
   );
   assert.equal(response.status, 201);
   const { id } = (await response.json()) as Comment;
   assert.deepEqual(heard, [], "nothing before the response");
   await Promise.all(deferred.map((task) => task()));
-  assert.deepEqual(heard.sort(), ["one:kabir@acme.test", "onCreated", `three:https://site.test/x?dogear=${id}`].sort());
+  assert.deepEqual(heard.sort(), ["one:sam@acme.test", "onCreated", `three:https://site.test/x?dogear=${id}`].sort());
   assert.equal(errors.length, 1);
   assert.match(String(errors[0]), /chat down/);
 });

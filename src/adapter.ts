@@ -73,7 +73,7 @@ export type Adapter = {
   people?(): Promise<Person[]>;
   /**
    * Optional: comments that @mention the current user, on pages they can open, not their own,
-   * newest first, without `state`. The layer polls it to say "Asha mentioned you", wherever they
+   * newest first, without `state`. The layer polls it to say "Alex mentioned you", wherever they
    * are on the site. Without it, mentions are only seen where they were left.
    */
   mentions?(): Promise<Comment[]>;

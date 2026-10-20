@@ -2275,7 +2275,7 @@ const ReactionsContext = createContext<ReactionsState | null>(null);
 /** Who can be @mentioned, for the `@` list in a compose box. Empty: typing @ is just text. */
 const PeopleContext = createContext<Person[]>([]);
 
-/** "Kabir", "Kabir and Tara", "Kabir, Tara and Meera". */
+/** "Sam", "Sam and Jordan", "Sam, Jordan and Riley". */
 function listOf(names: string[]) {
   return names.length < 2 ? names.join("") : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
 }

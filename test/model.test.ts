@@ -18,10 +18,10 @@ import {
 const anchor = { selector: "main > div:nth-of-type(2)", fx: 0.1, fy: 0.2, fw: 0, fh: 0, vx: 0.5, vy: 0.5, vw: 0, vh: 0 };
 
 test("initials and first names", () => {
-  assert.equal(initials("Asha Rao"), "AR");
-  assert.equal(initials("Asha"), "A");
+  assert.equal(initials("Alex Doe"), "AD");
+  assert.equal(initials("Alex"), "A");
   assert.equal(initials(""), "?");
-  assert.equal(firstName({ id: "1", name: "Asha Rao" }), "Asha");
+  assert.equal(firstName({ id: "1", name: "Alex Doe" }), "Alex");
 });
 
 test("a root needs a page, a body and a finite anchor", () => {
@@ -77,7 +77,7 @@ test("an edited body follows the same rule as a new one", () => {
 });
 
 test("names: trimmed, one space between words, 1 to 40 characters", () => {
-  assert.equal(cleanName("  Asha \n Rao "), "Asha Rao");
+  assert.equal(cleanName("  Alex \n Doe "), "Alex Doe");
   assert.equal(cleanName("   "), null);
   assert.equal(cleanTint("sky"), "sky");
   assert.equal(cleanTint("dawn-2"), "dawn-2");
@@ -90,7 +90,7 @@ test("threads group by page: this one first, then the rest, newest thread first"
   let time = 0;
   const make = (id: string, page: string, parentId: string | null = null, resolved = false): Comment => ({
     id, page, parentId, body: id, resolved, editedAt: null, createdAt: ++time,
-    author: { id: "a", name: "Asha" }, anchor: parentId ? null : anchor,
+    author: { id: "a", name: "Alex" }, anchor: parentId ? null : anchor,
   });
   const comments = [
     make("home-old", "/"),
@@ -117,7 +117,7 @@ test("threads group by page: this one first, then the rest, newest thread first"
 
 test("cleanList drops rows the layer can't draw, and refuses anything but an array", () => {
   const good = {
-    id: "1", page: "/x", parentId: null, body: "hi", author: { id: "a", name: "Asha" },
+    id: "1", page: "/x", parentId: null, body: "hi", author: { id: "a", name: "Alex" },
     anchor, createdAt: 1, editedAt: null, resolved: false,
   };
   const reply = { ...good, id: "2", parentId: "1", anchor: null };
@@ -135,11 +135,11 @@ test("cleanList drops rows the layer can't draw, and refuses anything but an arr
 
 test("mentions: handles in a text, who someone is, and the text in pieces", async () => {
   const { mentionedHandles, handleOf, mentionParts } = await import("../src/model.ts");
-  assert.deepEqual(mentionedHandles("hey @Tara.Mehta, mail me@kabir.com. (@kabir) and @tara.mehta."), ["tara.mehta", "kabir"]);
-  assert.equal(handleOf({ name: "Tara Mehta", email: "tara.mehta@acme.test" }), "tara.mehta");
+  assert.deepEqual(mentionedHandles("hey @Jordan.Lee, mail me@sam.com. (@sam) and @jordan.lee."), ["jordan.lee", "sam"]);
+  assert.equal(handleOf({ name: "Jordan Lee", email: "jordan.lee@acme.test" }), "jordan.lee");
   assert.equal(handleOf({ name: "Zoë Müller-Lee" }), "zoe.muller-lee");
   assert.equal(handleOf({ name: "Boss", handle: "The-Boss" }), "the-boss");
-  const tara = { id: "1", name: "Tara", handle: "tara.mehta" };
-  assert.deepEqual(mentionParts("hi @tara.mehta, and @nobody.", [tara]), ["hi ", tara, ", and @nobody."]);
-  assert.deepEqual(mentionParts("no mentions saved @tara.mehta"), ["no mentions saved @tara.mehta"]);
+  const jordan = { id: "1", name: "Jordan", handle: "jordan.lee" };
+  assert.deepEqual(mentionParts("hi @jordan.lee, and @nobody.", [jordan]), ["hi ", jordan, ", and @nobody."]);
+  assert.deepEqual(mentionParts("no mentions saved @jordan.lee"), ["no mentions saved @jordan.lee"]);
 });

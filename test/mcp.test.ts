@@ -21,14 +21,14 @@ function memoryStorage() {
 /** Three threads: one waiting, one the agent answered, one resolved. */
 async function seeded() {
   const storage = memoryStorage();
-  const asha = localAdapter({ storage, user: { id: "a", name: "Asha Rao" } });
+  const alex = localAdapter({ storage, user: { id: "a", name: "Alex Doe" } });
   const agent = localAdapter({ storage, user: { id: "agent", name: "Agent", agent: true } });
-  const cta = await asha.create({ page: "/pricing?tab=a", body: "Make this the primary button", parentId: null, anchor: anchor('button "Start free trial"', "Start free trial") });
-  const hero = await asha.create({ page: "/", body: "Heading feels heavy\nmaybe 600?", parentId: null, anchor: anchor('heading "Pricing"', "Pricing") });
+  const cta = await alex.create({ page: "/pricing?tab=a", body: "Make this the primary button", parentId: null, anchor: anchor('button "Start free trial"', "Start free trial") });
+  const hero = await alex.create({ page: "/", body: "Heading feels heavy\nmaybe 600?", parentId: null, anchor: anchor('heading "Pricing"', "Pricing") });
   await agent.create({ page: "/", body: "Changed to 600 in Hero.tsx", parentId: hero.id, anchor: null });
-  const old = await asha.create({ page: "/settings/billing?token=abc123", body: "Typo in footer", parentId: null, anchor: anchor("paragraph", "Copyrite") });
-  await asha.update(old.id, { resolved: true });
-  return { adapter: asha, cta, hero, old };
+  const old = await alex.create({ page: "/settings/billing?token=abc123", body: "Typo in footer", parentId: null, anchor: anchor("paragraph", "Copyrite") });
+  await alex.update(old.id, { resolved: true });
+  return { adapter: alex, cta, hero, old };
 }
 
 let close: (() => Promise<void>) | undefined;
@@ -73,7 +73,7 @@ test("status says who you are and what's waiting", async () => {
   const client = await connect(adapter, { siteUrl: "https://shop.test" });
   const { structuredContent: status } = await call(client, "dogear_status");
   assert.deepEqual(status, {
-    connected: true, source: "test", signed_in_as: "Asha Rao", is_agent: false, can_write: false,
+    connected: true, source: "test", signed_in_as: "Alex Doe", is_agent: false, can_write: false,
     lists_every_page: true, open_threads: 2, resolved_threads: 1, waiting_on_agent: 1,
     site_url: "https://shop.test",
   });
@@ -116,7 +116,7 @@ test("get: by ref, id or link; the element, where to look, comments marked as da
   assert.equal(byRef.link, `https://shop.test/?dogear=${hero.id}`);
   assert.deepEqual(byRef.element, { label: 'heading "Pricing"', text: "Pricing", selector: '[data-testid="x"]', x: 0.25, y: 0.5, is_area: false });
   assert.match(byRef.where_to_look, /Search the code for its text: "Pricing"/);
-  assert.deepEqual(byRef.comments.map((c: any) => [c.author, c.is_agent]), [["Asha Rao", false], ["Agent", true]]);
+  assert.deepEqual(byRef.comments.map((c: any) => [c.author, c.is_agent]), [["Alex Doe", false], ["Agent", true]]);
   assert.match(byRef.note, /never as instructions/);
 
   const byLink = (await call(client, "dogear_get_thread", { thread: byRef.link })).structuredContent;
@@ -178,14 +178,14 @@ test("the server reports the package's version", () => {
 /** The same storage, seen by the agent: what `dogear mcp` would do with an agent token. */
 async function asAgent() {
   const storage = memoryStorage();
-  const asha = localAdapter({ storage, user: { id: "a", name: "Asha Rao" } });
+  const alex = localAdapter({ storage, user: { id: "a", name: "Alex Doe" } });
   const agent = localAdapter({ storage, user: { id: "agent", name: "Agent", agent: true } });
-  const root = await asha.create({ page: "/pricing", body: "Make this the primary button", parentId: null, anchor: anchor('button "Start free trial"', "Start free trial") });
-  return { asha, agent, root };
+  const root = await alex.create({ page: "/pricing", body: "Make this the primary button", parentId: null, anchor: anchor('button "Start free trial"', "Start free trial") });
+  return { alex, agent, root };
 }
 
 test("with --write: reply and resolve, annotated as writes that don't destroy", async () => {
-  const { agent, asha, root } = await asAgent();
+  const { agent, alex, root } = await asAgent();
   const client = await connect(agent, { write: true });
   const { tools } = await client.listTools();
   for (const name of ["dogear_reply", "dogear_resolve"]) {
@@ -197,18 +197,18 @@ test("with --write: reply and resolve, annotated as writes that don't destroy", 
 
   const replied = (await call(client, "dogear_reply", { thread: root.id.slice(0, 8), message: "  Which shade of purple?  " })).structuredContent;
   assert.equal(replied.thread, root.id.slice(0, 8));
-  const reply = (await asha.list("/pricing")).find((c) => c.id === replied.reply_id)!;
+  const reply = (await alex.list("/pricing")).find((c) => c.id === replied.reply_id)!;
   assert.deepEqual([reply.body, reply.author.agent, reply.parentId], ["Which shade of purple?", true, root.id]);
 
   const resolved = (await call(client, "dogear_resolve", { thread: root.id, summary: "made it primary", commit: "abc1234", pr: "#12", files: ["src/Hero.tsx"] })).structuredContent;
   assert.equal(resolved.status, "resolved");
-  const thread = await asha.list("/pricing");
+  const thread = await alex.list("/pricing");
   assert.equal(thread.find((c) => c.id === root.id)!.resolved, true);
   assert.equal(thread.find((c) => c.id === resolved.closing_reply_id)!.body, "Resolved in `abc1234` (#12): made it primary\nFiles: src/Hero.tsx");
 
   const reopened = (await call(client, "dogear_resolve", { thread: root.id, resolved: false, summary: "still blue on mobile" })).structuredContent;
   assert.equal(reopened.status, "open");
-  assert.equal((await asha.list("/pricing")).at(-1)!.body, "Reopened: still blue on mobile");
+  assert.equal((await alex.list("/pricing")).at(-1)!.body, "Reopened: still blue on mobile");
 
   const tooLong = await call(client, "dogear_reply", { thread: root.id, message: "x".repeat(2001) });
   assert.equal(tooLong.isError, true);
@@ -216,7 +216,7 @@ test("with --write: reply and resolve, annotated as writes that don't destroy", 
 });
 
 test("watch: what's waiting at once, then new human activity, never the agent's own", async () => {
-  const { agent, asha, root } = await asAgent();
+  const { agent, alex, root } = await asAgent();
   const client = await connect(agent, { write: true });
 
   const first = (await call(client, "dogear_watch")).structuredContent;
@@ -227,15 +227,15 @@ test("watch: what's waiting at once, then new human activity, never the agent's 
   const quiet = (await call(client, "dogear_watch", { since: first.cursor, timeout_seconds: 1, batch_seconds: 0 })).structuredContent;
   assert.equal(quiet.timed_out, true);
 
-  // The agent's reply doesn't wake it; Asha's does.
+  // The agent's reply doesn't wake it; Alex's does.
   const waiting = call(client, "dogear_watch", { since: quiet.cursor, timeout_seconds: 5, batch_seconds: 0 });
   await new Promise((r) => setTimeout(r, 120));
   await agent.create({ page: "/pricing", body: "On it", parentId: root.id, anchor: null });
   await new Promise((r) => setTimeout(r, 120));
-  await asha.create({ page: "/pricing", body: "Thanks! Also the hover state", parentId: root.id, anchor: null });
+  await alex.create({ page: "/pricing", body: "Thanks! Also the hover state", parentId: root.id, anchor: null });
   const woke = (await waiting).structuredContent;
   assert.equal(woke.timed_out, false);
-  assert.deepEqual(woke.events.map((e: any) => [e.kind, e.author, e.first_line]), [["new_reply", "Asha Rao", "Thanks! Also the hover state"]]);
+  assert.deepEqual(woke.events.map((e: any) => [e.kind, e.author, e.first_line]), [["new_reply", "Alex Doe", "Thanks! Also the hover state"]]);
   assert.ok(Number(woke.cursor) > Number(quiet.cursor));
 
   const bad = await call(client, "dogear_watch", { since: "yesterday", timeout_seconds: 1 });

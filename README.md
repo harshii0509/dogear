@@ -225,7 +225,7 @@ reviewers a link with `?review`. The parameter isn't part of where comments live
 
 A comment left halfway through a form keeps the form, so whoever opens it sees what you saw.
 Register the form's state; Dogear saves it with each thread started while the form is on screen,
-puts it back when the thread is opened, and shows "Showing Asha's form · Back to my form".
+puts it back when the thread is opened, and shows "Showing Alex's form · Back to my form".
 
 ```tsx
 import { peekSnapshot, useDogearSnapshot } from "@harshi04/dogear/react";
