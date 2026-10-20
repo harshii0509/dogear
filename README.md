@@ -22,6 +22,48 @@ For plain HTML, load it from a CDN, or download `element.global.js` from a
 <script src="https://cdn.jsdelivr.net/npm/@harshi04/dogear@0.5/dist/element.global.js"></script>
 ```
 
+## Set it up with your coding agent
+
+Open Claude Code, Cursor, Codex or any coding agent in your project and paste this. It's an
+ordinary request in your own words: the agent looks at your project, asks you a few questions,
+sets Dogear up, and ends with a list of what's left for you to do. It asks before it installs
+anything, it leaves your secrets to you, and nothing is sent anywhere.
+
+```text
+I'd like to add Dogear (npm: @harshi04/dogear, MIT licence) to this project. It's Figma-style
+comments on our pages: pins, threads, replies and resolve. Please set it up with me.
+
+1. First look around: our framework, any sign-in we already have, our database, and where we
+   host. Then ask me these in one message, with your recommendation for each:
+   - Where should comments be stored? (For a Node or Next.js app, Dogear's own route handler
+     over our Postgres. A JSON file or memory just to try it. Or an adapter for Supabase or our
+     own API.)
+   - Who can comment? (Our existing sign-in, or visitors who just give a name.)
+   - Who should see comments? (Everyone, or only some pages or environments.)
+   - Should my coding agent be able to read and reply to comments? (Dogear has an MCP server.)
+   Please wait for my answers before installing anything.
+
+2. Install @harshi04/dogear and set it up the way I choose. Use the package's docs as the
+   reference: node_modules/@harshi04/dogear/README.md, docs/server.md (createDogear, stores
+   and options), docs/contract.md (the rules every backend keeps) and docs/examples/.
+   - The author of a comment should come from the server (our session, or Dogear's signed
+     guest cookie), never from the browser.
+   - Mount the comments once, near the root of the app.
+
+3. For secrets, please add the variable names to .env.example (or list them for me) and leave
+   the values to me. Don't commit, push or deploy; I'll do that myself.
+
+4. Check that it works: typecheck and build, and if there's a route, start the dev server and
+   try GET /me and a POST with curl.
+
+5. Finish with two short lists:
+   - Done: each file you added or changed, one line each.
+   - My turn: what I still need to do, in order. Include each environment variable to set
+     (locally and on our host) and how to make its value, any database step, and how to try
+     it (open the app, press C, drop a pin, reply). Then the optional extras: theming with the
+     --dogear-* CSS variables, moderation, and connecting a coding agent (MCP).
+```
+
 ## Quick start
 
 **Plain HTML**
@@ -53,9 +95,10 @@ With no adapter, comments are stored in this browser's localStorage, which is en
 
 ## Pick your backend
 
-**Let your agent do it.** Paste [`SETUP_PROMPT.md`](SETUP_PROMPT.md) into Claude Code, Cursor or
-any coding agent. It asks where you want comments stored and who your users are, then writes the
-adapter, the schema and the security rules, mounts it and checks it.
+**Let your agent do it.** Paste the prompt in [Set it up with your coding agent](#set-it-up-with-your-coding-agent)
+into Claude Code, Cursor or any coding agent. It asks where you want comments stored and who your
+users are, then sets up the backend and the security rules, mounts it, checks it, and tells you
+what's left for you.
 
 **Or do it yourself.**
 

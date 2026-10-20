@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- **Setting up with a coding agent:** the prompt now lives in the README ("Set it up with your
+  coding agent"), written as your own request. It covers `createDogear`, guests and the MCP, and
+  ends with a list of what's left for you. `SETUP_PROMPT.md` is gone.
+
 ## 0.5.1 — 2026-10-20
 
 ### Changed
