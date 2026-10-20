@@ -1,6 +1,6 @@
 {
   "name": "@harshi04/dogear",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Figma-style comments on any web page. Pins, areas, threads, resolve. Bring your own backend.",
   "license": "MIT",
   "repository": {

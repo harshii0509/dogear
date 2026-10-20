@@ -388,9 +388,15 @@ export function mentionParts(body: string, mentions: Mention[] = []): (string | 
 /** A thread as a list shows it: its first comment, how many replies, and when it last moved. */
 export type ThreadSummary = { root: Comment; replies: number; lastActivity: number };
 
+/** For `sort`: the thread started last comes first; the same moment falls back to the id. */
+export function newestFirst(a: ThreadSummary, b: ThreadSummary) {
+  return b.root.createdAt - a.root.createdAt || (a.root.id < b.root.id ? -1 : a.root.id > b.root.id ? 1 : 0);
+}
+
 /**
- * The threads in `comments`, newest activity first: those on `path`, then the rest grouped by
- * path, the most recently active group first. Resolved threads only with `resolved: true`.
+ * The threads in `comments`, newest thread first: those on `path`, then the rest grouped by
+ * path, the group with the newest thread first. A reply doesn't move its thread, so the order
+ * only changes when a thread is started. Resolved threads only with `resolved: true`.
  */
 export function groupThreads(
   comments: Comment[],
@@ -411,7 +417,7 @@ export function groupThreads(
   }
   const here: ThreadSummary[] = [];
   const elsewhere = new Map<string, ThreadSummary[]>();
-  for (const thread of [...threads.values()].sort((a, b) => b.lastActivity - a.lastActivity)) {
+  for (const thread of [...threads.values()].sort(newestFirst)) {
     const at = pathOf(thread.root.page);
     if (at === path) here.push(thread);
     else elsewhere.set(at, [...(elsewhere.get(at) ?? []), thread]);
