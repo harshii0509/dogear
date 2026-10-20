@@ -20,7 +20,8 @@ import type { Comment, User } from "./model";
  * anything; `pick="pin"` places comments as pins that follow the pointer, outlining nothing;
  * `reactions='["❤️","👍"]'` lets people react, and `reactions-in="thread"` only in an open thread;
  * `emoji-data` is where the full picker's emoji come from, to self-host Emojibase's data;
- * `link-param="comment"` opens threads from `?comment=<id>` links, to match your backend's.
+ * `link-param="comment"` opens threads from `?comment=<id>` links, to match your backend's;
+ * `theme="light"` (or "auto", or the default "dark") picks the glass, and can change at any time.
  *
  * No `endpoint` means `localAdapter()`. For any other backend, set `element.adapter = {…}`
  * before the element is connected, or call `Dogear.mount({ adapter })` from a script.
@@ -40,14 +41,25 @@ class DogearElement extends HTMLElement {
   /** The avatars a guest picks from, by key; or the `avatars` attribute, as JSON. */
   avatars?: Record<string, string>;
 
+  static observedAttributes = ["theme"];
+
   connectedCallback() {
     const endpoint = this.getAttribute("endpoint");
-    const adapter =
+    this.resolved =
       this.adapter ??
       (endpoint
         ? httpAdapter(endpoint, { guests: this.hasAttribute("guests") })
         : localAdapter());
-    this.resolved = adapter;
+    this.paint();
+  }
+
+  /** A site's dark-mode switch flips `theme` on a live element: draw again, with the same adapter. */
+  attributeChangedCallback() {
+    if (this.resolved && this.isConnected) this.paint();
+  }
+
+  private paint() {
+    const adapter = this.resolved;
     render(
       h(Comments as unknown as ComponentType<Parameters<typeof Comments>[0]>, {
         adapter,
@@ -66,6 +78,7 @@ class DogearElement extends HTMLElement {
         reactionsIn: this.getAttribute("reactions-in") === "thread" ? "thread" : undefined,
         emojiData: this.getAttribute("emoji-data") ?? undefined,
         linkParam: this.getAttribute("link-param") ?? undefined,
+        theme: readTheme(this.getAttribute("theme")),
         navigate: this.navigate,
         pageLabel: this.pageLabel,
         deletable: this.deletable,
@@ -105,6 +118,10 @@ function readAvatars(json: string | null): Record<string, string> | undefined {
   }
 }
 
+function readTheme(value: string | null) {
+  return value === "light" || value === "auto" || value === "dark" ? value : undefined;
+}
+
 function readLayout(value: string | null) {
   return value === "tray" || value === "dock" ? value : undefined;
 }
@@ -131,6 +148,7 @@ export function mount({
   reactionsIn,
   emojiData,
   linkParam,
+  theme,
   navigate,
   pageLabel,
   deletable,
@@ -152,6 +170,7 @@ export function mount({
   reactionsIn?: "everywhere" | "thread";
   emojiData?: string;
   linkParam?: string;
+  theme?: "dark" | "light" | "auto";
   navigate?: (href: string) => void;
   pageLabel?: (path: string) => string;
   deletable?: (me: User, comment: Comment) => boolean;
@@ -173,6 +192,7 @@ export function mount({
   if (reactions) element.setAttribute("reactions", JSON.stringify(reactions));
   if (reactionsIn) element.setAttribute("reactions-in", reactionsIn);
   if (emojiData) element.setAttribute("emoji-data", emojiData);
+  if (theme) element.setAttribute("theme", theme);
   if (linkParam) element.setAttribute("link-param", linkParam);
   if (shortcut) element.setAttribute("shortcut", shortcut);
   if (ignore) element.setAttribute("ignore", ignore);
