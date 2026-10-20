@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.1 — 2026-10-20
+
+### Changed
+- **The thread list is newest thread first, and stays put.** A reply no longer lifts its thread
+  to the top, and each row's time is when the thread was started, so the list reads in sequence.
+  This page's threads come first, then the other pages', in the same order.
+
 ## 0.5.0 — 2026-10-19
 
 ### Changed

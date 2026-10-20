@@ -40,6 +40,7 @@ import {
   cleanReaction,
   firstName,
   groupThreads,
+  newestFirst,
   initials,
   mentionedHandles,
   mentionParts,
@@ -3699,7 +3700,7 @@ function Dock({
 
   const others = elsewhere
     .flatMap((group) => group.threads.map((thread) => ({ ...thread, path: group.path })))
-    .sort((a, b) => b.lastActivity - a.lastActivity);
+    .sort(newestFirst);
   const empty = here.length === 0 && others.length === 0;
   const placing = state === "placing";
   const asking = state === "join";
@@ -4134,7 +4135,7 @@ function Floater({
   const panelHeight = Math.min(FLOAT_PANEL_HEIGHT, window.innerHeight - spot.dy - FLOAT_EDGE);
   const others = elsewhere
     .flatMap((group) => group.threads.map((thread) => ({ ...thread, path: group.path })))
-    .sort((a, b) => b.lastActivity - a.lastActivity);
+    .sort(newestFirst);
   const corner = { [spot.h]: 0, [spot.v]: 0 } as CSSProperties;
   let row = 0;
   const stagger = () => ({ animationDelay: `${40 + Math.min(row++, 6) * 20}ms` });
@@ -4318,7 +4319,7 @@ function FloatButton({
 }
 
 function TrayRow({
-  thread: { root, replies, lastActivity },
+  thread: { root, replies },
   path,
   resolving,
   fresh = false,
@@ -4367,7 +4368,7 @@ function TrayRow({
         <span className="pc-col pc-fill pc-tray-row-text">
           <Byline
             author={root.author}
-            time={ago(lastActivity)}
+            time={ago(root.createdAt)}
             extra={locations ? undefined : replyCount}
           />
           <Body comment={root} className="pc-clamp pc-body" inline />

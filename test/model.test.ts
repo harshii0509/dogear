@@ -86,7 +86,7 @@ test("names: trimmed, one space between words, 1 to 40 characters", () => {
   assert.equal(cleanName(7), null);
 });
 
-test("threads group by page: this one first, then the rest by latest activity", () => {
+test("threads group by page: this one first, then the rest, newest thread first", () => {
   let time = 0;
   const make = (id: string, page: string, parentId: string | null = null, resolved = false): Comment => ({
     id, page, parentId, body: id, resolved, editedAt: null, createdAt: ++time,
@@ -102,13 +102,17 @@ test("threads group by page: this one first, then the rest by latest activity", 
   ];
   const { here, elsewhere } = groupThreads(comments, "/");
   assert.deepEqual(here.map((t) => t.root.id), ["home-new", "home-old"]);
-  // The reply made /work/a the most recent page.
-  assert.deepEqual(elsewhere.map((g) => g.path), ["/work/a", "/about"]);
-  assert.deepEqual(elsewhere[0].threads.map((t) => [t.root.id, t.replies]), [["work", 1]]);
+  // The reply on /work/a doesn't move it: /about has the newer thread.
+  assert.deepEqual(elsewhere.map((g) => g.path), ["/about", "/work/a"]);
+  assert.deepEqual(elsewhere[1].threads.map((t) => [t.root.id, t.replies]), [["work", 1]]);
   assert.deepEqual(
     groupThreads(comments, "/", { resolved: true }).here.map((t) => t.root.id),
     ["done", "home-new", "home-old"],
   );
+  // A late reply to the oldest thread leaves it at the bottom, and keeps the time it moved.
+  const replied = groupThreads([...comments, make("old-reply", "/", "home-old")], "/").here;
+  assert.deepEqual(replied.map((t) => t.root.id), ["home-new", "home-old"]);
+  assert.equal(replied[1].lastActivity, time);
 });
 
 test("cleanList drops rows the layer can't draw, and refuses anything but an array", () => {
