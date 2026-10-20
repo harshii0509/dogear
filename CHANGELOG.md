@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- **Plain HTML (`element.global.js`): reactions and motion work.** The build left
+  `process.env.NODE_ENV` in place, which a browser doesn't have, so every spring threw: presses
+  and pop-ins never animated, and opening the full emoji picker failed. It's now defined at build
+  time.
+- **The reaction set stays open when you click +.** The + button gives way to the set, and the
+  blur that left behind no longer reads as focus going elsewhere.
+
 ## 0.5.1 — 2026-10-20
 
 ### Changed
