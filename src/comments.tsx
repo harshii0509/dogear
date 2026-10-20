@@ -179,6 +179,12 @@ export type CommentsProps = {
    * read as `${emojiData}/en/data.json`. Defaults to jsDelivr's; set it to self-host.
    */
   emojiData?: string;
+  /**
+   * The glass the layer is made of: "dark" (the default), "light", or "auto", which follows the
+   * visitor's system setting. A site with its own dark-mode switch passes its current mode. Any
+   * `--dogear-*` property still overrides either.
+   */
+  theme?: "dark" | "light" | "auto";
 };
 
 /**
@@ -514,13 +520,14 @@ function Layer({
   reactions,
   reactionsIn = "everywhere",
   emojiData = EMOJI_DATA,
+  theme = "dark",
   page,
   linked,
   linkParam,
   host,
 }: Pick<
   CommentsProps,
-  "adapter" | "shortcut" | "ignore" | "layout" | "navigate" | "onActiveChange" | "resolvers" | "resolve" | "joinFirst" | "pick" | "reactions" | "reactionsIn" | "emojiData"
+  "adapter" | "shortcut" | "ignore" | "layout" | "navigate" | "onActiveChange" | "resolvers" | "resolve" | "joinFirst" | "pick" | "reactions" | "reactionsIn" | "emojiData" | "theme"
 > & {
   /** The current URL, path and query, as comments are keyed. */
   page: string;
@@ -1461,6 +1468,7 @@ function Layer({
     <div
       ref={rootRef}
       className="pc-root"
+      data-theme={theme}
       style={keyboard ? ({ "--_kb": `${keyboard}px` } as CSSProperties) : undefined}
     >
       {capturing && (

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.6.0 — 2026-10-20
+
+### Changed
+- **Dogear is made of glass.** The default look is dark glass: black at 64% under a 16px blur, a lit
+  edge, white text in four steps, rounder corners. The mark (the pin being placed, the outlines)
+  is its own blue, so it shows on any page. A site that set `--dogear-*` keeps what it set.
+
+### Added
+- **`theme`: `"dark"` (the default), `"light"` or `"auto"`.** Light is frosted white with dark text;
+  auto follows the visitor's system setting. The `theme` attribute can change on a live element,
+  for a site's own dark-mode switch.
+
 ## Unreleased
 
 ### Changed
