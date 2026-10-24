@@ -464,6 +464,7 @@ cd examples/next && npm install && npm run dev
 ## Working on Dogear
 
 For contributors, and for coding agents working in this repo. Issues and pull requests are welcome.
+Coding agents: start with [AGENTS.md](AGENTS.md).
 
 **Commands** (Node 20, as in CI):
 
