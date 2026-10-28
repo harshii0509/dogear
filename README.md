@@ -490,6 +490,7 @@ npm ci               # install
 npm test             # every test in test/, with Node's test runner through tsx
 npm run typecheck    # tsc, no emit
 npm run build        # tsup → dist/: the main entry, react, server, element, element.global.js and the CLI
+npm run pulse        # how Dogear is doing: npm installs, stars, traffic, issues, and public repos using it
 ```
 
 **Where things are.**
@@ -503,12 +504,14 @@ npm run build        # tsup → dist/: the main entry, react, server, element, e
 | `src/adapter.ts` | the `Adapter` interface, `localAdapter` and `httpAdapter` |
 | `src/element.ts` | `<dogear-comments>` and `Dogear.mount`: attributes into props |
 | `src/snapshot.ts`, `src/markdown.ts` | forms that come back with a thread, and threads as Markdown |
+| `src/pulse.ts` | `pulseOf`: the figures behind the Pulse view and `dogear_pulse` |
 | `src/server/` | `createDogear` (`handler.ts`), the stores (`store.ts`, `postgres.ts`) and alerts (`notify.ts`) |
 | `src/cli.ts`, `src/serve.ts`, `src/mcp.ts` | the `dogear` command, `dogear serve` and `dogear mcp` |
 | `src/index.ts`, `src/react.ts`, `src/server/index.ts` | the public entry points; `tsup.config.ts` builds each one |
 | `test/` | one `*.test.ts` per module; `server.test.ts` checks the contract on every store |
 | `docs/` | server, contract and MCP guides, and recipes in `docs/examples/`. It ships in the npm package |
 | `media/` | the clip and the diagrams in this README; `node media/diagrams.mjs` redraws the diagrams. Not in the npm package |
+| `scripts/pulse.mjs` | `npm run pulse`, for maintainers: npm's download counts and the repo's GitHub figures, through `gh`. Traffic needs push access. It keeps a local history in `.pulse/` (gitignored) to show what changed. Not in the npm package |
 
 **Ground rules.**
 

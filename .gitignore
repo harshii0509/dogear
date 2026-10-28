@@ -5,3 +5,4 @@ dist
 next-env.d.ts
 .dogear
 .inkd
+.pulse
