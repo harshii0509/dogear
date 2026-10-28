@@ -59,6 +59,7 @@ import {
   type User,
 } from "./model";
 import { toMarkdown } from "./markdown";
+import { pulseOf, type Pulse } from "./pulse";
 import { captureSnapshot, restoreSnapshot } from "./snapshot";
 import { STYLES } from "./styles";
 
@@ -137,7 +138,7 @@ export type CommentsProps = {
   /**
    * Your own icons, by name, to match your site's set: any element, an `<svg>` or an icon
    * component (`{ close: <IconCrossSmall /> }`). Each is drawn at 16px and takes `currentColor`.
-   * Names: comment, send, close, plus, more, resolve, reopen, field.
+   * Names: comment, send, close, plus, more, resolve, reopen, pulse, field.
    */
   icons?: Partial<Record<IconName, ReactNode>>;
   /**
@@ -151,6 +152,13 @@ export type CommentsProps = {
    * open comment, for a site that wants a plain list. The pins still show where.
    */
   locations?: boolean;
+  /**
+   * false: no Pulse in the list. On (the default), the tray's and the dock panel's head have a
+   * Pulse switch: open threads, new ones this week, how long a thread waits for its first reply,
+   * the threads nobody has answered yet, and the pages with the most feedback. It's worked out
+   * from the comments the list already loaded (`pulseOf`), so nothing is sent anywhere new.
+   */
+  pulse?: boolean;
   /**
    * With guests (`adapter.join`) and the tray: a visitor who hasn't given a name is asked for it,
    * and an avatar, as soon as they open the comments, and sees the threads and pins after. Without
@@ -516,6 +524,7 @@ function Layer({
   resolvers = "anyone",
   resolve = true,
   joinFirst = false,
+  pulse: pulseOn = true,
   pick = "element",
   reactions,
   reactionsIn = "everywhere",
@@ -527,7 +536,7 @@ function Layer({
   host,
 }: Pick<
   CommentsProps,
-  "adapter" | "shortcut" | "ignore" | "layout" | "navigate" | "onActiveChange" | "resolvers" | "resolve" | "joinFirst" | "pick" | "reactions" | "reactionsIn" | "emojiData" | "theme"
+  "adapter" | "shortcut" | "ignore" | "layout" | "navigate" | "onActiveChange" | "resolvers" | "resolve" | "joinFirst" | "pulse" | "pick" | "reactions" | "reactionsIn" | "emojiData" | "theme"
 > & {
   /** The current URL, path and query, as comments are keyed. */
   page: string;
@@ -1431,6 +1440,19 @@ function Layer({
   const roots = comments.filter((c) => c.parentId === null && c.anchor);
   const openCount = roots.filter((c) => !resolve || !c.resolved).length;
   const visible = roots.filter((c) => withResolved || !c.resolved);
+  /* The list's Pulse, from every comment it has: this page's, and the rest when `listAll` gave
+     them. Worked out per render, which is cheap next to drawing the rows it sits beside. */
+  const pulse: PulseBoard | undefined =
+    pulseOn && tray
+      ? (() => {
+          const every = [...comments, ...all.filter((c) => pathOf(c.page) !== pathname)];
+          const replies = new Map<string, number>();
+          for (const c of every) {
+            if (c.parentId !== null) replies.set(c.parentId, (replies.get(c.parentId) ?? 0) + 1);
+          }
+          return { pulse: pulseOf(every), sitewide: Boolean(adapter.listAll), path: pathname, replies };
+        })()
+      : undefined;
   const openRoot = roots.find((c) => c.id === openId) ?? null;
   const openAt = openRoot ? resolveAnchor(openRoot.anchor!) : null;
   /* The pin being written: where its anchor is now, so it rides along when the page scrolls (as
@@ -1700,6 +1722,7 @@ function Layer({
               : undefined
           }
           freshId={freshId}
+          pulse={pulse}
           onShow={(root) => {
             // The list makes way for the thread: back to the row.
             setFace("tray");
@@ -1747,6 +1770,7 @@ function Layer({
             pick={pick}
             showResolved={resolve ? showResolved : undefined}
             onShowResolved={setShowResolved}
+            pulse={pulse}
             onShow={show}
             onGo={go}
             onOpen={() => setActive(true)}
@@ -1962,6 +1986,8 @@ const ICONS = {
       <path d="M18 15.75c.2 1.55.95 2.3 2.5 2.5-1.55.2-2.3.95-2.5 2.5-.2-1.55-.95-2.3-2.5-2.5 1.55-.2 2.3-.95 2.5-2.5Z" />
     </>
   ),
+  /** The list's Pulse: a line that rises and falls, like comments over two weeks. */
+  pulse: <path d="M3.75 13.5h3.5l2.5-6 4.5 10 2.5-6h3.5" />,
   /** Leads every field, as in a command palette's input row. */
   field: (
     <>
@@ -3541,6 +3567,7 @@ function Dock({
   mentionCount = 0,
   mentionsOnly = false,
   onMentionsOnly,
+  pulse,
 }: {
   state: DockState;
   /** The thread you just posted: its row arrives with a highlight that fades. */
@@ -3568,7 +3595,12 @@ function Dock({
   mentionsOnly?: boolean;
   /** Absent when nothing mentions you: no filter. */
   onMentionsOnly?: (on: boolean) => void;
+  /** Absent with `pulse={false}`: no Pulse switch. */
+  pulse?: PulseBoard;
 }) {
+  /** Whether the list shows how feedback is going rather than the threads. */
+  const [pulsing, setPulsing] = useState(false);
+  const pulseShown = pulsing && pulse !== undefined;
   /** Whether the panel is out: the list, or the name step before it. */
   const open = state === "open" || state === "join";
   /** Which panel: kept while the box closes, so what's leaving is what was there. */
@@ -3803,8 +3835,22 @@ function Dock({
             data-leaving={open ? undefined : ""}
           >
             <div className="pc-head pc-row">
-              <span className="pc-title pc-fill">{mentionsOnly ? "Mentions" : "Comments"}</span>
-              {onMentionsOnly && (
+              <span className="pc-title pc-fill">
+                {pulseShown ? "Pulse" : mentionsOnly ? "Mentions" : "Comments"}
+              </span>
+              {pulse && (
+                <button
+                  type="button"
+                  className="pc-pulse-switch pc-row"
+                  aria-pressed={pulseShown}
+                  title={pulseShown ? "Comments" : "Pulse"}
+                  aria-label={pulseShown ? "Show the comments" : "Show the pulse, how feedback is going"}
+                  onClick={() => setPulsing(!pulseShown)}
+                >
+                  <Glyph name="pulse" />
+                </button>
+              )}
+              {onMentionsOnly && !pulseShown && (
                 <button
                   type="button"
                   className="pc-mentions-filter pc-row"
@@ -3820,7 +3866,7 @@ function Dock({
                   @{mentionCount > 0 && <span className="pc-mentions-count">{mentionCount}</span>}
                 </button>
               )}
-              {showResolved !== undefined && (
+              {showResolved !== undefined && !pulseShown && (
                 <label className="pc-switch" style={{ color: "var(--_muted)" }}>
                   <input
                     type="checkbox"
@@ -3841,6 +3887,15 @@ function Dock({
                 }}
               />
             </div>
+            {pulseShown ? (
+              <PulseView
+                board={pulse}
+                className="pc-tray-list"
+                resolving={showResolved !== undefined}
+                onShow={onShow}
+                onGo={onGo}
+              />
+            ) : (
             <ul className="pc-tray-list pc-col">
               {empty && (
                 <li className="pc-tray-empty pc-dock-row" style={stagger()}>
@@ -3871,6 +3926,7 @@ function Dock({
                 />
               ))}
             </ul>
+            )}
           </div>
         )}
         <button
@@ -4014,6 +4070,7 @@ function Floater({
   mentionsOnly,
   onMentionsOnly,
   freshId,
+  pulse,
   onShow,
   onGo,
 }: {
@@ -4036,10 +4093,15 @@ function Floater({
   /** Absent when nothing mentions you: no filter. */
   onMentionsOnly?: (on: boolean) => void;
   freshId: string | null;
+  /** Absent with `pulse={false}`: no Pulse switch. */
+  pulse?: PulseBoard;
   onShow: (root: Comment) => void;
   onGo: (root: Comment) => void;
 }) {
   const { keyOf } = useContext(PendingContext);
+  /** Whether the panel shows how feedback is going rather than the threads. */
+  const [pulsing, setPulsing] = useState(false);
+  const pulseShown = pulsing && pulse !== undefined;
   const [spot, setSpot] = useState(storedSpot);
   const [dragging, setDragging] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -4226,8 +4288,19 @@ function Floater({
               style={{ width: panelWidth, maxHeight: panelHeight }}
             >
               <div data-dock-handle="" className="pc-float-head pc-row">
-                <span className="pc-title pc-fill">{mentionsOnly ? "Mentions" : "Comments"}</span>
-                {onMentionsOnly && (
+                <span className="pc-title pc-fill">
+                  {pulseShown ? "Pulse" : mentionsOnly ? "Mentions" : "Comments"}
+                </span>
+                {pulse && (
+                  <FloatButton
+                    label={pulseShown ? "Comments" : "Pulse"}
+                    pressed={pulseShown}
+                    onClick={press(() => setPulsing(!pulseShown))}
+                  >
+                    <Glyph name="pulse" />
+                  </FloatButton>
+                )}
+                {onMentionsOnly && !pulseShown && (
                   <FloatButton
                     label={mentionsOnly ? "All comments" : "Mentions of you"}
                     pressed={mentionsOnly}
@@ -4237,7 +4310,7 @@ function Floater({
                     {mentionCount > 0 && <span className="pc-float-count pc-float-mentions">{mentionCount}</span>}
                   </FloatButton>
                 )}
-                {showResolved !== undefined && (
+                {showResolved !== undefined && !pulseShown && (
                   <FloatButton
                     label={showResolved ? "Hide resolved" : "Show resolved"}
                     pressed={showResolved}
@@ -4250,6 +4323,15 @@ function Floater({
                   <Glyph name="close" />
                 </FloatButton>
               </div>
+              {pulseShown ? (
+                <PulseView
+                  board={pulse}
+                  className="pc-float-list"
+                  resolving={showResolved !== undefined}
+                  onShow={onShow}
+                  onGo={onGo}
+                />
+              ) : (
               <ul className="pc-float-list pc-col">
                 {here.length === 0 && others.length === 0 && (
                   <li className="pc-tray-empty pc-dock-row" style={stagger()}>
@@ -4281,6 +4363,7 @@ function Floater({
                   />
                 ))}
               </ul>
+              )}
             </div>
           )}
         </div>
@@ -4398,6 +4481,145 @@ function TrayRow({
       {/* Not until it's saved: there's nothing to react to yet. */}
       {!state.pending(root.id) && <Reactions comment={root} where="list" />}
     </li>
+  );
+}
+
+/** What the list's Pulse needs: the figures, and enough to turn a waiting thread into a row. */
+type PulseBoard = {
+  pulse: Pulse;
+  /** Whether it covers every page (the adapter has `listAll`), or this one only. */
+  sitewide: boolean;
+  /** The page you're on: a row here opens in place, one elsewhere goes there. */
+  path: string;
+  /** Replies per thread, for the rows' counts. */
+  replies: Map<string, number>;
+};
+
+/** How long, said short: 40m, 5h, 3d. */
+function span(ms: number) {
+  const minutes = Math.max(1, Math.round(ms / 60_000));
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.round(minutes / 60);
+  return hours < 48 ? `${hours}h` : `${Math.round(hours / 24)}d`;
+}
+
+/** Comments a day as one line: its shape, not its figures, so no axis and no dots. */
+function Spark({ days }: { days: number[] }) {
+  const top = Math.max(1, ...days);
+  const points = days
+    .map((count, i) => `${(i / (days.length - 1)) * 100},${22 - (count / top) * 20}`)
+    .join(" ");
+  return (
+    <svg className="pc-pulse-spark" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true">
+      <polyline
+        points={points}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
+/**
+ * How feedback is going, in place of the list: what's open, what's new, how long a thread waits
+ * for someone to answer, the threads nobody has, and where the feedback gathers. Every figure is
+ * from `pulseOf`, over the comments the list already has.
+ */
+function PulseView({
+  board: { pulse, sitewide, path, replies },
+  className,
+  resolving,
+  onShow,
+  onGo,
+}: {
+  board: PulseBoard;
+  /** The list it stands in for, so it scrolls and fades the same. */
+  className: string;
+  resolving: boolean;
+  onShow: (root: Comment) => void;
+  onGo: (root: Comment) => void;
+}) {
+  const pageLabel = useContext(PageLabelContext);
+  const { keyOf } = useContext(PendingContext);
+  const { thisWeek, lastWeek } = pulse.started;
+  const trend =
+    thisWeek === lastWeek
+      ? "the same as last week"
+      : `${Math.abs(thisWeek - lastWeek)} ${thisWeek > lastWeek ? "more" : "fewer"} than last week`;
+  const total = pulse.daily.reduce((sum, day) => sum + day, 0);
+  const stats: [string | number, string][] = [
+    [pulse.open, "open"],
+    [thisWeek, "this week"],
+    [pulse.firstReply.median === null ? "–" : span(pulse.firstReply.median), "first reply"],
+  ];
+  const people = pulse.people.slice(0, 8);
+  return (
+    <ul className={`${className} pc-col pc-pulse`}>
+      <li className="pc-pulse-stats pc-row">
+        {stats.map(([value, label]) => (
+          <span key={label} className="pc-pulse-stat pc-col">
+            <span className="pc-pulse-value">{value}</span>
+            <span className="pc-meta">{label}</span>
+          </span>
+        ))}
+      </li>
+      <li className="pc-pulse-block pc-col">
+        <Spark days={pulse.daily} />
+        <span className="pc-meta">
+          {total === 1 ? "1 comment" : `${total} comments`} in 14 days{sitewide ? "" : " on this page"}. New
+          threads this week, {trend}.
+        </span>
+      </li>
+      <li className="pc-pulse-label pc-meta">
+        {pulse.waitingTotal === 0
+          ? "Every open thread has a reply."
+          : `Waiting on a first reply · ${pulse.waitingTotal}`}
+      </li>
+      {pulse.waiting.map((root) => {
+        const at = pathOf(root.page);
+        const here = at === path;
+        return (
+          <TrayRow
+            key={keyOf(root.id)}
+            thread={{ root, replies: replies.get(root.id) ?? 0, lastActivity: root.createdAt }}
+            path={here ? undefined : at}
+            resolving={resolving}
+            onPick={here ? onShow : onGo}
+          />
+        );
+      })}
+      {sitewide && pulse.pages.length > 1 && (
+        <>
+          <li className="pc-pulse-label pc-meta">Most open threads</li>
+          {pulse.pages.map((page) => (
+            <li key={page.path} className="pc-pulse-page pc-row">
+              <span className="pc-fill pc-truncate">{pageLabel(page.path)}</span>
+              <span className="pc-pulse-count">{page.open}</span>
+            </li>
+          ))}
+        </>
+      )}
+      {people.length > 0 && (
+        <>
+          <li className="pc-pulse-label pc-meta">Active this week</li>
+          <li className="pc-pulse-people pc-row">
+            {people.map(({ user, comments }) => (
+              <span key={user.id} title={`${user.name}, ${comments === 1 ? "1 comment" : `${comments} comments`}`}>
+                <Avatar author={user} />
+              </span>
+            ))}
+            {pulse.people.length > people.length && (
+              <span className="pc-meta">+{pulse.people.length - people.length}</span>
+            )}
+            <span className="pc-hidden">{pulse.people.map((p) => p.user.name).join(", ")}</span>
+          </li>
+        </>
+      )}
+    </ul>
   );
 }
 

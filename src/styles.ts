@@ -747,6 +747,31 @@ button.pc-pin:active { transform: scale(0.95); }
   .pc-mentions-filter:hover { background: var(--_hover); color: var(--_text); }
   .pc-mentions-filter[aria-pressed="true"]:hover { background: color-mix(in srgb, var(--_mention) 24%, transparent); color: var(--_mention); }
 }
+/* The Pulse switch, beside the mentions filter, and the Pulse it shows in place of the list: three
+   figures in wells, the last 14 days as a line, then the threads nobody has answered. */
+.pc-pulse-switch {
+  flex-shrink: 0; justify-content: center; width: 28px; height: 24px; border-radius: 999px;
+  color: var(--_muted); transition: background-color 150ms ease, color 150ms ease;
+}
+.pc-pulse-switch[aria-pressed="true"] { color: var(--_strong); background: var(--_hover); }
+@media (hover: hover) and (pointer: fine) {
+  .pc-pulse-switch:hover { background: var(--_hover); color: var(--_text); }
+}
+.pc-pulse { animation: pc-fade 150ms ease; }
+.pc-pulse-stats { align-items: stretch; gap: 4px; padding: 4px 4px 0; }
+.pc-pulse-stat {
+  flex: 1 1 0; min-width: 0; gap: 2px; padding: 10px; border-radius: var(--_row-radius); background: var(--_well);
+}
+.pc-pulse-value {
+  color: var(--_strong); font-size: 20px; line-height: 24px; font-weight: 600; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.pc-pulse-block { gap: 6px; padding: 12px 10px 4px; color: var(--_text); }
+.pc-pulse-spark { display: block; width: 100%; height: 28px; overflow: visible; }
+.pc-pulse-label { padding: 16px 10px 4px; }
+.pc-pulse-page { gap: 8px; padding: 6px 10px; color: var(--_text); }
+.pc-pulse-count { color: var(--_strong); font-weight: 500; font-variant-numeric: tabular-nums; }
+.pc-pulse-people { flex-wrap: wrap; gap: 4px; padding: 6px 10px 4px; }
 .pc-switch { display: flex; align-items: center; gap: 8px; color: var(--_text); cursor: pointer; }
 .pc-switch input {
   appearance: none; width: 28px; height: 16px; border-radius: 999px; margin: 0; cursor: pointer;

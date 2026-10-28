@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **Pulse: how feedback is going, in the list.** The tray and the dock's panel have a Pulse switch:
+  open threads, threads started this week, the usual wait for a first reply, comments a day over
+  14 days, the open threads nobody has answered, the pages with the most open threads, and who
+  was active this week. It's worked out from the comments the list already has, so nothing is
+  sent anywhere new. `pulse={false}` (`no-pulse`) turns it off.
+- **`pulseOf(comments)`** in the main entry: the same figures, for your own dashboard or server.
+- **`dogear_pulse`** in `dogear mcp`, so a coding agent can answer "how's feedback going?"
+
 ## 0.6.0 — 2026-10-20
 
 ### Changed

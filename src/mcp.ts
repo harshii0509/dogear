@@ -4,6 +4,7 @@ import { z } from "zod";
 import type { Adapter } from "./adapter";
 import { toMarkdown } from "./markdown";
 import { cleanBody, pathOf, type Comment } from "./model";
+import { pulseOf } from "./pulse";
 
 /**
  * `dogear mcp`: the threads people leave on your pages, for a coding agent, through the same
@@ -393,6 +394,62 @@ export function createDogearServer({
         resolved_threads: threads ? threads.filter((t) => t.root.resolved).length : null,
         waiting_on_agent: threads ? threads.filter(waiting).length : null,
         site_url: siteUrl ?? null,
+      });
+    }),
+  );
+
+  server.registerTool(
+    "dogear_pulse",
+    {
+      title: "How feedback is going",
+      description:
+        "A pulse check on the feedback: threads open and resolved, threads started this week " +
+        "against last week, comments a day for 14 days, how long threads wait for a first reply, " +
+        "the open threads nobody has answered yet, and the pages and elements with the most " +
+        "feedback. Use it to answer \"how's feedback going?\" or to decide what to look at first. " +
+        "Narrow to one page with path.",
+      inputSchema: z.object({
+        path: z.string().optional().describe('A page path, "/pricing", or a prefix, "/settings/*".'),
+      }),
+      outputSchema: z.object({
+        open_threads: z.number(),
+        resolved_threads: z.number(),
+        started_this_week: z.number(),
+        started_last_week: z.number(),
+        comments_per_day: z.array(z.number()).describe("14 days, oldest first, the last ending now."),
+        median_first_reply_hours: z.number().nullable(),
+        first_replies_counted: z.number(),
+        waiting_for_a_reply: z.number(),
+        longest_waiting: z.array(z.record(z.string(), z.unknown())),
+        busiest_pages: z.array(z.object({ path: z.string(), open_threads: z.number() })),
+        busiest_elements: z.array(z.object({ path: z.string(), element: z.string(), threads: z.number() })),
+        active_this_week: z.array(z.object({ name: z.string(), comments: z.number(), agent: z.boolean() })),
+      }),
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    guarded(async ({ path }) => {
+      const comments = await load(path);
+      const now = Date.now();
+      const pulse = pulseOf(comments, { now });
+      const threads = new Map(threadsOf(comments).map((t) => [t.root.id, t]));
+      return answer({
+        open_threads: pulse.open,
+        resolved_threads: pulse.resolved,
+        started_this_week: pulse.started.thisWeek,
+        started_last_week: pulse.started.lastWeek,
+        comments_per_day: pulse.daily,
+        median_first_reply_hours:
+          pulse.firstReply.median === null ? null : Math.round((pulse.firstReply.median / 3_600_000) * 10) / 10,
+        first_replies_counted: pulse.firstReply.threads,
+        waiting_for_a_reply: pulse.waitingTotal,
+        longest_waiting: pulse.waiting.map((root) => summary(threads.get(root.id)!, now, false)),
+        busiest_pages: pulse.pages.map((p) => ({ path: p.path, open_threads: p.open })),
+        busiest_elements: pulse.spots.map((s) => ({ path: s.path, element: s.label, threads: s.threads })),
+        active_this_week: pulse.people.map((p) => ({
+          name: p.user.name,
+          comments: p.comments,
+          agent: Boolean(p.user.agent),
+        })),
       });
     }),
   );
