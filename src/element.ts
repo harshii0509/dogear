@@ -16,7 +16,7 @@ import type { Comment, User } from "./model";
  * name (your route answers `POST /me`); `resolvers="authors"` keeps Resolve to authors and admins;
  * `no-resolve` turns resolving off, for a plain list of comments; `avatars='{"sky": "#bbc5dd"}'`
  * offers guests avatars to pick from with their name; `no-locations` leaves out where each comment
- * was left, for a plain list; `join-first` (with `guests`) asks a visitor's name before showing
+ * was left, for a plain list; `no-pulse` leaves the Pulse switch out of the list; `join-first` (with `guests`) asks a visitor's name before showing
  * anything; `pick="pin"` places comments as pins that follow the pointer, outlining nothing;
  * `reactions='["❤️","👍"]'` lets people react, and `reactions-in="thread"` only in an open thread;
  * `emoji-data` is where the full picker's emoji come from, to self-host Emojibase's data;
@@ -72,6 +72,7 @@ class DogearElement extends HTMLElement {
         resolve: !this.hasAttribute("no-resolve"),
         avatars: this.avatars ?? readAvatars(this.getAttribute("avatars")),
         locations: !this.hasAttribute("no-locations"),
+        pulse: !this.hasAttribute("no-pulse"),
         joinFirst: this.hasAttribute("join-first"),
         pick: this.getAttribute("pick") === "pin" ? "pin" : undefined,
         reactions: readReactions(this.getAttribute("reactions")),
@@ -142,6 +143,7 @@ export function mount({
   resolve,
   avatars,
   locations,
+  pulse,
   joinFirst,
   pick,
   reactions,
@@ -164,6 +166,7 @@ export function mount({
   resolve?: boolean;
   avatars?: Record<string, string>;
   locations?: boolean;
+  pulse?: boolean;
   joinFirst?: boolean;
   pick?: "element" | "pin";
   reactions?: string[];
@@ -187,6 +190,7 @@ export function mount({
   if (resolvers) element.setAttribute("resolvers", resolvers);
   if (resolve === false) element.setAttribute("no-resolve", "");
   if (locations === false) element.setAttribute("no-locations", "");
+  if (pulse === false) element.setAttribute("no-pulse", "");
   if (joinFirst) element.setAttribute("join-first", "");
   if (pick) element.setAttribute("pick", pick);
   if (reactions) element.setAttribute("reactions", JSON.stringify(reactions));

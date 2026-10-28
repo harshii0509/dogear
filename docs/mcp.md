@@ -90,6 +90,7 @@ Failures come back as tool errors that say what to do next.
 | Tool | What it does |
 |---|---|
 | `dogear_status` | Connection check: what it reads, who it is signed in as, whether writes are on, and counts of open, resolved and waiting threads. Call it first when something fails. |
+| `dogear_pulse` | How feedback is going: open and resolved threads, threads started this week against last, comments a day for 14 days, the median wait for a first reply, the open threads nobody has answered (longest first), and the pages and elements with the most feedback. Narrow with `path`. |
 | `dogear_list_threads` | Open threads by default, newest activity first. Filters: `status` (`open`, `resolved`, `all`), `path` (`/pricing` or `/settings/*`), `author`, `query` (comments, labels, element text), `waiting_on_agent`. Paged with `limit` (up to 100) and `cursor`. `response_format: "detailed"` adds ids, selectors and element text. |
 | `dogear_get_thread` | One thread in full: the element (label, the text it showed, a DOM path, the position on it), **where to look** in the code, every comment, and a link. Takes the 8-character `ref`, a full id, or a `?dogear=` link. |
 | `dogear_next` | The oldest open thread whose last comment is a person's, meaning nobody has answered it yet, in full. `done: true` when nothing is waiting. |

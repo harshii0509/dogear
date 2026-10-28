@@ -261,6 +261,7 @@ takes every prop but `enabled` and `icons`, functions included.
 | `emojiData` | `emoji-data` | jsDelivr's `emojibase-data@17` | where the set's "···" picker loads every other emoji from, read as `${emojiData}/en/data.json`. Point it at your own copy of Emojibase's data to self-host |
 | `theme` | `theme` | `"dark"` | `"light"`, or `"auto"` to follow the visitor's system setting. Changing the attribute redraws at once. See [Theming](#theming) |
 | `pick` | `pick` | `"element"` | `"pin"`: the pin you'd drop, with your avatar, follows the pointer and a click drops it. Nothing on the page is outlined or named, and there are no areas, for sites whose visitors comment rather than inspect |
+| `pulse` | `no-pulse` | `true` | `false`: no Pulse switch in the tray or the dock's panel. See [Pulse](#pulse) |
 | `locations` | `no-locations` | `true` | `false`: no page or "on heading …" under comments in the list or on an open one, just name · time and the text. Pins still show where |
 | `avatars` | `avatars='{…}'`, or the element's `avatars` property | none | avatars for people without a photo, by key: `{ sky: "linear-gradient(…)" }`. Guests pick one with their name; everyone else gets one by id |
 
@@ -311,6 +312,22 @@ const router = useRouter();
 // Just a list of comments, no resolving:
 <Comments layout="tray" resolve={false} navigate={router.push} />;
 ```
+
+### Pulse
+
+The tray and the dock's panel have a Pulse switch in their head. It swaps the list for how
+feedback is going:
+- **Three figures:** open threads, threads started this week, and how long a thread usually
+  waits for its first reply from someone else.
+- **The last 14 days** as a line of comments a day, with this week against last.
+- **Waiting on a first reply:** the open threads nobody else has answered, the longest-waiting
+  first. A row opens its thread, as in the list.
+- **Most open threads** by page, and who commented this week.
+
+It's worked out in the browser from the comments the list already loaded, so it covers every page
+when your adapter has `listAll`, and this page otherwise. Nothing is sent anywhere new. Turn it off
+with `pulse={false}` (`no-pulse` on the element). The same figures come from `pulseOf(comments)`
+in the main entry, for your own dashboard, and from `dogear_pulse` for a coding agent.
 
 To review a page without everyone else seeing the layer, set `activation="param"` and send
 reviewers a link with `?review`. The parameter isn't part of where comments live:
@@ -473,6 +490,7 @@ npm ci               # install
 npm test             # every test in test/, with Node's test runner through tsx
 npm run typecheck    # tsc, no emit
 npm run build        # tsup → dist/: the main entry, react, server, element, element.global.js and the CLI
+npm run pulse        # how Dogear is doing: npm installs, stars, traffic, issues, and public repos using it
 ```
 
 **Where things are.**
@@ -486,12 +504,14 @@ npm run build        # tsup → dist/: the main entry, react, server, element, e
 | `src/adapter.ts` | the `Adapter` interface, `localAdapter` and `httpAdapter` |
 | `src/element.ts` | `<dogear-comments>` and `Dogear.mount`: attributes into props |
 | `src/snapshot.ts`, `src/markdown.ts` | forms that come back with a thread, and threads as Markdown |
+| `src/pulse.ts` | `pulseOf`: the figures behind the Pulse view and `dogear_pulse` |
 | `src/server/` | `createDogear` (`handler.ts`), the stores (`store.ts`, `postgres.ts`) and alerts (`notify.ts`) |
 | `src/cli.ts`, `src/serve.ts`, `src/mcp.ts` | the `dogear` command, `dogear serve` and `dogear mcp` |
 | `src/index.ts`, `src/react.ts`, `src/server/index.ts` | the public entry points; `tsup.config.ts` builds each one |
 | `test/` | one `*.test.ts` per module; `server.test.ts` checks the contract on every store |
 | `docs/` | server, contract and MCP guides, and recipes in `docs/examples/`. It ships in the npm package |
 | `media/` | the clip and the diagrams in this README; `node media/diagrams.mjs` redraws the diagrams. Not in the npm package |
+| `scripts/pulse.mjs` | `npm run pulse`, for maintainers: npm's download counts and the repo's GitHub figures, through `gh`. Traffic needs push access. It keeps a local history in `.pulse/` (gitignored) to show what changed. Not in the npm package |
 
 **Ground rules.**
 

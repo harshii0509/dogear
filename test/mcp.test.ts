@@ -55,11 +55,11 @@ async function call(client: Client, name: string, args: Record<string, unknown> 
   return result as { structuredContent?: any; isError?: boolean; content: { type: string; text: string }[] };
 }
 
-test("read-only by default: five read tools, annotated, and nothing that writes", async () => {
+test("read-only by default: six read tools, annotated, and nothing that writes", async () => {
   const { adapter } = await seeded();
   const client = await connect(adapter);
   const { tools } = await client.listTools();
-  assert.deepEqual(tools.map((t) => t.name).sort(), ["dogear_get_thread", "dogear_list_threads", "dogear_next", "dogear_status", "dogear_watch"]);
+  assert.deepEqual(tools.map((t) => t.name).sort(), ["dogear_get_thread", "dogear_list_threads", "dogear_next", "dogear_pulse", "dogear_status", "dogear_watch"]);
   for (const tool of tools) {
     assert.equal(tool.annotations?.readOnlyHint, true, tool.name);
     assert.ok(tool.outputSchema, `${tool.name} has an output schema`);
@@ -77,6 +77,29 @@ test("status says who you are and what's waiting", async () => {
     lists_every_page: true, open_threads: 2, resolved_threads: 1, waiting_on_agent: 1,
     site_url: "https://shop.test",
   });
+});
+
+test("pulse: counts, the thread nobody answered, and where feedback gathers", async () => {
+  const { adapter, cta } = await seeded();
+  const client = await connect(adapter);
+  const { structuredContent: pulse } = await call(client, "dogear_pulse");
+  assert.equal(pulse.open_threads, 2);
+  assert.equal(pulse.resolved_threads, 1);
+  assert.equal(pulse.started_this_week, 3);
+  assert.equal(pulse.comments_per_day.length, 14);
+  assert.equal(pulse.comments_per_day.at(-1), 4);
+  assert.equal(pulse.first_replies_counted, 1, "the agent answered the heading");
+  assert.equal(pulse.waiting_for_a_reply, 1);
+  assert.deepEqual(pulse.longest_waiting.map((t: any) => t.ref), [cta.id.slice(0, 8)]);
+  assert.deepEqual(pulse.busiest_pages.map((p: any) => p.path).sort(), ["/", "/pricing"]);
+  assert.deepEqual(pulse.active_this_week, [
+    { name: "Alex Doe", comments: 3, agent: false },
+    { name: "Agent", comments: 1, agent: true },
+  ]);
+
+  const one = (await call(client, "dogear_pulse", { path: "/pricing" })).structuredContent;
+  assert.equal(one.open_threads, 1);
+  assert.equal(one.resolved_threads, 0);
 });
 
 test("list: open by default, newest activity first, filters, cursors, redaction", async () => {

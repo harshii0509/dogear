@@ -1,5 +1,6 @@
 export { localAdapter, httpAdapter, type Adapter } from "./adapter";
 export { toMarkdown } from "./markdown";
+export { pulseOf, type Pulse } from "./pulse";
 export {
   validateNew,
   cleanBody,

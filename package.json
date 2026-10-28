@@ -46,6 +46,7 @@
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test test/*.test.ts",
+    "pulse": "node scripts/pulse.mjs",
     "prepare": "tsup",
     "prepublishOnly": "npm run typecheck && npm test"
   },
