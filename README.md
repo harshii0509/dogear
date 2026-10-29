@@ -1,5 +1,11 @@
 # Dogear
 
+[![npm](https://img.shields.io/npm/v/@harshi04/dogear)](https://www.npmjs.com/package/@harshi04/dogear)
+[![MIT licence](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
+[![CI](https://github.com/harshii0509/dogear/actions/workflows/ci.yml/badge.svg)](https://github.com/harshii0509/dogear/actions/workflows/ci.yml)
+
+Open source, MIT, and it runs on your own backend. [dogear.harshux.com](https://dogear.harshux.com)
+
 Figma-style comments on any web page. Click to drop a pin or drag to mark an area, then write.
 You get threads, replies, edit, resolve, and live updates. It works in plain HTML, React and Next.js.
 
@@ -480,8 +486,8 @@ cd examples/next && npm install && npm run dev
 
 ## Working on Dogear
 
-For contributors, and for coding agents working in this repo. Issues and pull requests are welcome.
-Coding agents: start with [AGENTS.md](AGENTS.md).
+For contributors, and for coding agents working in this repo. Issues and pull requests are welcome:
+[CONTRIBUTING.md](CONTRIBUTING.md) has how to pick one up. Coding agents: start with [AGENTS.md](AGENTS.md).
 
 **Commands** (Node 20, as in CI):
 
