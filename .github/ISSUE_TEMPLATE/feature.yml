@@ -1,0 +1,22 @@
+name: Feature idea
+description: Something Dogear could do.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What you're trying to do
+      description: The situation and the problem, before any solution.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help
+      description: How you picture it working. Check ROADMAP.md's "Not doing" list first.
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Building it
+      options:
+        - label: I'd like to send a pull request for this

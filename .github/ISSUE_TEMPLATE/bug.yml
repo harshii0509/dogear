@@ -1,0 +1,44 @@
+name: Bug report
+description: Something in Dogear doesn't work as it should.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you saw instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Add <Comments layout="tray" /> to a Next.js page
+        2. Press C and click a button
+        3. …
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Dogear version
+      placeholder: "0.6.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: setup
+    attributes:
+      label: How you use it
+      options:
+        - React or Next.js (@harshi04/dogear/react)
+        - Plain HTML (element.global.js)
+        - Web component (@harshi04/dogear/element)
+        - The server or MCP only
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: Safari 19 on iOS 26
