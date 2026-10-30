@@ -1,7 +1,7 @@
 /** `dogear serve` keeps the REST contract, and stays local: wrong host, foreign origin, huge body. */
 import assert from "node:assert/strict";
 import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
-import { request as httpRequest } from "node:http";
+import { createServer, request as httpRequest } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, before, test } from "node:test";
@@ -149,5 +149,44 @@ test("comments kept in .inkd/ from before the rename are still found", async () 
     assert.equal(dataDir(cwd), join(cwd, ".dogear"), "both: .dogear/ wins");
   } finally {
     await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("--webhook: new threads reach the URL, linked to the page that uses the server", async () => {
+  const heard: Record<string, unknown>[] = [];
+  let got: () => void = () => {};
+  const arrived = new Promise<void>((resolve) => (got = resolve));
+  const receiver = createServer((req, res) => {
+    let text = "";
+    req.on("data", (chunk) => (text += chunk));
+    req.on("end", () => {
+      heard.push(JSON.parse(text));
+      res.writeHead(204).end();
+      got();
+    });
+  });
+  await new Promise<void>((resolve) => receiver.listen(0, "127.0.0.1", resolve));
+  const hookDir = await mkdtemp(join(tmpdir(), "dogear-hook-"));
+  const hooked = await serve({
+    port: 0,
+    file: join(hookDir, "comments.json"),
+    name: "Alex",
+    webhook: `http://127.0.0.1:${(receiver.address() as { port: number }).port}/in`,
+  });
+  try {
+    const response = await fetch(`${hooked.endpoint}`, {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: "http://localhost:3000" },
+      body: JSON.stringify({ page: "/pricing", body: "Bigger?", parentId: null, anchor }),
+    });
+    assert.equal(response.status, 201);
+    const { id } = (await response.json()) as { id: string };
+    await arrived;
+    assert.equal(heard[0].type, "thread.created");
+    assert.equal(heard[0].link, `http://localhost:3000/pricing?dogear=${id}`);
+  } finally {
+    await hooked.close();
+    await new Promise((resolve) => receiver.close(resolve));
+    await rm(hookDir, { recursive: true, force: true });
   }
 });

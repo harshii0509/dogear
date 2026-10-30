@@ -17,7 +17,7 @@ import {
   type Person,
   type User,
 } from "../model";
-import type { Notifier } from "./notify";
+import { deliver, listens, type Connector, type DogearEvent, type EventType } from "./notify";
 import type { Known, Store } from "./store";
 
 /**
@@ -32,6 +32,7 @@ import type { Known, Store } from "./store";
  *   canSee           comments are as private as their pages
  *   moderate         text is checked before it's saved; a refusal is a 422 the writer sees
  *   onCreated        something happens after a comment is saved (alerts, an agent), via `defer`
+ *   notify           connectors: activity goes to Slack, Notion, a webhook, after the response
  *
  *   // app/api/comments/[[...rest]]/route.ts
  *   const dogear = createDogear({ store: postgresStore({ query }), guests: true, secret: process.env.DOGEAR_SECRET });
@@ -103,11 +104,13 @@ export type DogearOptions = {
    */
   onCreated?: (event: Created) => void | Promise<void>;
   /**
-   * Who hears about each new comment, after the response: `webhook({ url })` posts it to your
-   * URL, or a `Notifier` of your own messages whoever was @mentioned. Each runs
-   * on its own; what one throws goes to `onError`.
+   * Connectors: who hears about comment activity, after the response. `webhook({ url })` posts
+   * new threads and resolves to your URL; a recipe in `docs/connectors/` sends them to Slack,
+   * Notion, Linear or GitHub; a function of your own hears every new comment, to message whoever
+   * was @mentioned. Each runs on its own; what one throws goes to `onError`, and the comment
+   * stays saved.
    */
-  notify?: Notifier | Notifier[];
+  notify?: Connector | Connector[];
   /**
    * An assistant that answers threads in the thread itself, as itself: an AI teammate with your
    * docs or data behind it. Its replies are labelled as AI. It's in the @ list, and runs through
@@ -116,6 +119,11 @@ export type DogearOptions = {
   assistant?: Assistant;
   /** The query parameter a link to a thread uses, for `Created.link`: `?dogear=<id>` by default. */
   linkParam?: string;
+  /**
+   * The site a link to a thread opens on, when it isn't the route's own: `dogear serve` answers
+   * on its own port, so it uses the page's. Return null for the route's origin.
+   */
+  linkOrigin?: (request: Request) => string | null;
   /**
    * Checks a comment, an edit or a guest's name before it's saved. `{ ok: false, message }` turns
    * it away with a 422, and the layer shows `message` to the writer and keeps their text.
@@ -298,7 +306,7 @@ export function createDogear(options: DogearOptions): DogearHandler {
   const resolvers = options.resolvers ?? (guests && !auth ? "authors" : "anyone");
   const onError = options.onError ?? ((error: unknown) => console.error("dogear:", error));
   const linkParam = options.linkParam ?? "dogear";
-  const notifiers = options.notify ? [options.notify].flat() : [];
+  const connectors = options.notify ? [options.notify].flat() : [];
   const directory: Directory = options.directory ?? { list: () => store.people() };
   /** Work for after the response; whatever it throws is reported, and goes no further. */
   const later = (task: () => Promise<void>) => {
@@ -602,7 +610,13 @@ export function createDogear(options: DogearOptions): DogearHandler {
         if (resolvers === "authors" && comment.author.id !== user.id && !user.admin && !user.agent) {
           throw new HttpError(403, "not yours");
         }
-        return json(await store.resolve(id, patch.resolved));
+        // Read first: a store may change the comment it handed out in place.
+        const changed = comment.resolved !== patch.resolved;
+        const resolved = await store.resolve(id, patch.resolved);
+        if (resolved && changed) {
+          emit(request, patch.resolved ? "thread.resolved" : "thread.reopened", resolved, user);
+        }
+        return json(resolved);
       }
       throw new HttpError(400, "bad request");
     }
@@ -635,6 +649,39 @@ export function createDogear(options: DogearOptions): DogearHandler {
       ...((tint ?? user?.tint) ? { tint: (tint ?? user?.tint)! } : {}),
     };
     return json(guest, 200, { "set-cookie": setCookie(request, guest) });
+  }
+
+  /** A link that opens a comment's thread on its page. */
+  function linkTo(request: Request, comment: Comment) {
+    const url = new URL(comment.page, options.linkOrigin?.(request) ?? new URL(request.url).origin);
+    url.searchParams.set(linkParam, comment.parentId ?? comment.id);
+    return url.href;
+  }
+
+  /**
+   * Tells `onCreated` (for a new comment) and each connector that listens for `type`, after the
+   * response, each on its own: one that fails goes to `onError` and doesn't stop the rest.
+   */
+  function emit(request: Request, type: EventType, comment: Comment, actor: User, mentioned: Known[] = []) {
+    const created = type === "thread.created" || type === "comment.replied";
+    const onCreated = created ? options.onCreated : undefined;
+    const listening = connectors.filter((connector) => listens(connector, type));
+    if (!onCreated && !listening.length) return;
+    const link = linkTo(request, comment);
+    later(async () => {
+      const rootId = comment.parentId ?? comment.id;
+      const thread = (await store.list(pathOf(comment.page))).filter((c) => (c.parentId ?? c.id) === rootId);
+      if (!thread.some((c) => c.id === comment.id)) thread.push(comment);
+      const activity = { comment, thread, actor, page: pathOf(comment.page), link };
+      const event = (created ? { type, ...activity, author: actor, mentioned } : { type, ...activity }) as DogearEvent;
+      const runs = [
+        ...(onCreated ? [async () => onCreated(event as DogearEvent & Created)] : []),
+        ...listening.map((connector) => () => deliver(connector, event)),
+      ];
+      for (const outcome of await Promise.allSettled(runs.map(async (run) => run()))) {
+        if (outcome.status === "rejected") onError(outcome.reason);
+      }
+    });
   }
 
   async function create(request: Request, user: User | null): Promise<Response> {
@@ -672,26 +719,8 @@ export function createDogear(options: DogearOptions): DogearHandler {
       ...(mentions.length ? { mentions } : {}),
     };
     const saved = await store.insert(comment, { ip });
-    const hooks = [...(options.onCreated ? [options.onCreated] : []), ...notifiers];
-    if (hooks.length) {
-      const rootId = saved.parentId ?? saved.id;
-      const url = new URL(saved.page, new URL(request.url).origin);
-      url.searchParams.set(linkParam, rootId);
-      later(async () => {
-        const thread = (await store.list(pathOf(saved.page))).filter((c) => (c.parentId ?? c.id) === rootId);
-        if (!thread.some((c) => c.id === saved.id)) thread.push(saved);
-        const event: Created = { comment: saved, thread, author: user, mentioned: people, link: url.href };
-        // Each on its own: one that fails doesn't stop the rest.
-        for (const outcome of await Promise.allSettled(hooks.map(async (hook) => hook(event)))) {
-          if (outcome.status === "rejected") onError(outcome.reason);
-        }
-      });
-    }
-    if (assistant && !user.agent) {
-      const link = new URL(saved.page, new URL(request.url).origin);
-      link.searchParams.set(linkParam, saved.parentId ?? saved.id);
-      later(() => answer(saved, link.href));
-    }
+    emit(request, saved.parentId ? "comment.replied" : "thread.created", saved, user, people);
+    if (assistant && !user.agent) later(() => answer(saved, linkTo(request, saved)));
     // Who was mentioned but can't open the page: the writer is told, and nothing is sent to them.
     return json(skipped.length ? { ...saved, skipped } : saved, 201);
   }

@@ -10,9 +10,11 @@ const HELP = `dogear: comments on live pages, for people and coding agents
 
 Usage
   dogear serve [--port 4848] [--file .dogear/comments.json] [--name "Alex" | --guest] [--origin <url>]...
+               [--webhook <url>]
       A local comments server for development. --guest starts signed out, so the page asks for
       a name (and avatar) as it would a first-time visitor. Point the page at the endpoint:
       <dogear-comments endpoint="http://127.0.0.1:4848/api/comments">
+      --webhook (or DOGEAR_WEBHOOK) posts new threads and resolves to a URL: Zapier, Make, n8n.
 
   dogear mcp [--endpoint <url> | --adapter <file>] [--token <t>] [--site <url>] [--write]
       An MCP server (stdio) that lets a coding agent read the threads, and with --write, reply
@@ -77,6 +79,7 @@ async function main(argv: string[]) {
         name: { type: "string" },
         guest: { type: "boolean" },
         origin: { type: "string", multiple: true },
+        webhook: { type: "string" },
       },
     });
     const port = values.port === undefined ? DEFAULT_PORT : Number(values.port);
@@ -89,6 +92,7 @@ async function main(argv: string[]) {
       name: values.name,
       guest: values.guest,
       origins: values.origin,
+      webhook: values.webhook ?? (process.env.DOGEAR_WEBHOOK || undefined),
     });
     console.log(`dogear serve: ${served.endpoint}
 
