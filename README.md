@@ -61,7 +61,15 @@ what you already run.
 | Firebase or your own API | [Your own adapter](https://dogear.harshux.com/docs/backends/contract), five functions |
 
 [Pick a backend](https://dogear.harshux.com/docs/backends/overview) has the whole thing in two
-files for Next.js and Postgres.
+files for Next.js and Postgres. [Where comments live](docs/where-comments-live.md) covers who can
+see them and how to get them out.
+
+## Connectors
+
+With `createDogear` or `dogear serve`, new threads and resolves (replies too, if you want them) can
+reach Slack, Microsoft Teams, Notion, Linear, GitHub or any webhook. A connector is a few lines on
+your server, and comments stay in your database. Start with the
+[connector recipes](docs/connectors/README.md).
 
 ## Coding agents
 
@@ -90,8 +98,8 @@ deployed backend.
 | Agents | [The MCP server](https://dogear.harshux.com/docs/agents/mcp) · [Copy as Markdown](https://dogear.harshux.com/docs/agents/markdown) |
 
 The same guides ship in the npm package as Markdown, for coding agents working offline:
-[docs/server.md](docs/server.md), [docs/contract.md](docs/contract.md), [docs/mcp.md](docs/mcp.md)
-and [docs/examples/](docs/examples).
+[docs/server.md](docs/server.md), [docs/contract.md](docs/contract.md), [docs/mcp.md](docs/mcp.md),
+[docs/connectors/](docs/connectors/README.md) and [docs/examples/](docs/examples).
 
 ## Props
 
@@ -170,7 +178,7 @@ npm run pulse        # how Dogear is doing (npm installs, stars, traffic, issues
 | `src/element.ts` | `<dogear-comments>` and `Dogear.mount`, which turn attributes into props |
 | `src/snapshot.ts`, `src/markdown.ts` | form snapshots that come back with a thread, and threads as Markdown |
 | `src/pulse.ts` | `pulseOf`, which works out the figures behind the Pulse view and `dogear_pulse` |
-| `src/server/` | `createDogear` (`handler.ts`), the stores (`store.ts`, `postgres.ts`) and alerts (`notify.ts`) |
+| `src/server/` | `createDogear` (`handler.ts`), the stores (`store.ts`, `postgres.ts`) and connectors (`notify.ts`) |
 | `src/cli.ts`, `src/serve.ts`, `src/mcp.ts` | the `dogear` command, `dogear serve` and `dogear mcp` |
 | `src/index.ts`, `src/react.ts`, `src/server/index.ts` | the public entry points. `tsup.config.ts` builds each one |
 | `test/` | one `*.test.ts` per module. `server.test.ts` checks the contract on every store |

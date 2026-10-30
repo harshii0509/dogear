@@ -29,17 +29,20 @@ Only a store is required. Each thing you add switches more on.
 | `moderate` | Text is checked before it's saved. |
 | `directory` | The @ list comes from your own people table, and people who have never signed in can be mentioned. |
 | `onCreated` and `defer` | Your code runs after each comment is saved, after the response, for alerts, an agent or counts. |
-| `notify` | Whoever is @mentioned hears about it outside the page, through a webhook or your own notifier. |
+| `notify` | Connectors: new threads, replies and resolves reach Slack, Notion, Linear, GitHub or a webhook. |
 | `assistant` | An AI assistant answers in the thread, labelled as AI. |
 
-## Alerts
+## Connectors
 
-`notify` takes one notifier or a list. Each hears about every new comment after the response,
-through `defer`, on its own. One that fails goes to `onError`, and the rest still run.
+`notify` takes one connector or a list. Each hears about comment activity after the response,
+through `defer`, on its own. One that fails goes to `onError`, the comment stays saved, and the
+rest still run. There are four events: `thread.created`, `comment.replied`, `thread.resolved` and
+`thread.reopened`.
 
 ```ts
 import { createDogear, webhook } from "@harshi04/dogear/server";
 import { after } from "next/server";
+import { slack } from "./connectors/slack"; // copied from docs/connectors
 
 createDogear({
   store,
@@ -47,22 +50,31 @@ createDogear({
   defer: after,
   linkParam: "comment",
   notify: [
+    slack(process.env.SLACK_WEBHOOK_URL!),
     webhook({ url: process.env.ALERTS_WEBHOOK!, secret: process.env.ALERTS_SECRET }),
     dmMentioned, // your own, see below
   ],
 });
 ```
 
-- **`webhook({ url, secret?, headers? })`** posts `{ type: "comment.created", comment, thread,
-  author, mentioned, link }`, without form snapshots. With `secret`, the `x-dogear-signature`
-  header is `sha256=<hex>`, the HMAC of the body, so you can check it on your end. `webhook()`
-  tries once more after a network error or a 5xx.
-- **Your own notifier** is a `(event: Created) => Promise<void>`. `event.mentioned` lists who to
-  tell, with their emails, already filtered by `canSee`. A notifier that messages each of them in
-  your chat app takes a few lines. `excerpt(comment)` gives the comment's text with @handles as
-  names.
+- **Recipes** for Slack, Teams, Notion, Linear, GitHub and a Supabase trigger are in
+  [connectors/](connectors/README.md). They're short files you copy.
+- **`webhook({ url, secret?, headers?, events?, when? })`** posts each event as JSON:
+  `{ type, actor, comment, thread, page, link }`, plus `author` and `mentioned` for a new comment,
+  without form snapshots. With `secret`, the `x-dogear-signature` header is `sha256=<hex>`, the
+  HMAC of the body, so you can check it on your end. `webhook()` tries once more after a network
+  error or a 5xx.
+- **What each one hears.** An object connector (`webhook()`, the recipes, `{ events, when, send }`)
+  hears new threads and resolves unless its `events` say otherwise. `when(event)` filters by page
+  or person.
+- **Your own function** is a `(event: Created) => Promise<void>`, and hears every new comment,
+  threads and replies. `event.mentioned` lists who to tell, with their emails, already filtered by
+  `canSee`. A function that messages each of them in your chat app takes a few lines.
+  `excerpt(comment)` gives the comment's text with @handles as names, and `headline(event)` one
+  plain line about it.
 
-A Slack or Teams recipe is on the [roadmap](../ROADMAP.md).
+Retries across restarts (a shared outbox) are on the [roadmap](../ROADMAP.md). Where comments are
+kept, and every way to get them out, is in [where-comments-live.md](where-comments-live.md).
 
 ## Mentions
 
@@ -148,7 +160,8 @@ The table is `dogear_comments` unless you pass `table`. If you'd rather run migr
 | `deletable(user, comment)` | its author, or an admin | Who may delete a comment. For example, anyone may delete the assistant's. The agent never deletes. |
 | `onCreated(event)` | none | Runs after a comment is saved, with `{ comment, thread, author, mentioned, link }`. `mentioned` lists the people to alert, with emails, only those who can open the page, and never the author. `link` opens the thread. What throws goes to `onError`. |
 | `defer(task)` | run at once, not awaited | How `onCreated` runs after the response, such as Next's `after` or your platform's `waitUntil`. |
-| `notify` | none | A notifier, or a list of them, such as `webhook(…)` or your own. See [Alerts](#alerts). |
+| `notify` | none | A connector, or a list of them: a recipe, `webhook(…)` or your own. See [Connectors](#connectors). |
+| `linkOrigin(request)` | the route's origin | The site a thread's `link` opens on, when the route isn't on it. Return null for the route's own. |
 | `assistant` | none | An AI assistant that answers in threads. See [An assistant](#an-assistant). |
 | `linkParam` | `"dogear"` | The query parameter in `link`, such as `"comment"` for `?comment=<id>`. Give the widget the same `linkParam`. |
 | `moderate(text, kind, user)` | none | Return `{ ok: false, message }` to answer 422, and the widget shows `message`. Admins and the agent aren't checked. |

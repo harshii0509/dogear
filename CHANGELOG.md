@@ -10,11 +10,29 @@
   they were last active, and their line draws over everyone's. The row now covers the last 14 days,
   not 7, and `+N` shows who it's hiding.
 - With no open threads at all, Pulse says "No open threads." rather than "Every open thread has a reply."
+- **Breaking: `webhook()` sends the new events.** Its body's `type` is one of the four above instead of
+  `comment.created`, it carries `actor` and `page`, and by default it hears new threads and
+  resolves, not replies: pass `events: ["thread.created", "comment.replied"]` for every new
+  comment, as before. `webhook()` now returns an object (`{ events, when, send }`), not a function.
 
 ### Added
 - **`dailyThreads` and `contributors`** on `pulseOf`: how many of each day's comments started a
   thread, and who commented over the 14 days, with their share of each day.
 - **`--dogear-tooltip`**: what the Pulse's tooltip and the graph's dot ring sit on.
+- **Connectors: threads reach Slack, Notion, Linear and more.** `createDogear` now tells
+  connectors about four things: `thread.created`, `comment.replied`, `thread.resolved` and
+  `thread.reopened`, each with who did it (`actor`), the comment, the thread, the `page` and a
+  `link` back. A connector is a function (it hears new comments, as notifiers did) or
+  `{ events, when, send }`, which hears new threads and resolves unless it picks others, and
+  `when` filters by page or person. A failing connector goes to `onError`; the comment stays saved.
+- **Recipes in `docs/connectors/`** for Slack, Microsoft Teams (Workflows), Notion, Linear, GitHub
+  Issues and a Supabase database trigger: short files to copy, each tested with a fake of its API.
+- **`headline(event)`** gives one plain line ("Alex Doe started a thread on /pricing").
+- **`dogear serve --webhook <url>`** (or `DOGEAR_WEBHOOK`) posts new threads and resolves to a
+  URL, for Zapier, Make or n8n, with links that open the page using the server.
+- **`linkOrigin`** on `createDogear`: the site a thread's link opens on, when the route isn't on it.
+- **docs/where-comments-live.md:** where each setup keeps comments, who can see them, and every
+  way to get them out.
 
 ## 0.7.0 — 2026-11-04
 

@@ -40,7 +40,7 @@ What you've seen is kept in this browser.
 
 ## Alerts
 
-`notify` takes one notifier or a list. Each hears about every new comment after the response, through `defer`, on its own. One that fails goes to `onError`, and the rest still run.
+`notify` takes one connector or a list. Each hears about comment activity after the response, through `defer`, on its own. One that fails goes to `onError`, the comment stays saved, and the rest still run. There are four events: `thread.created`, `comment.replied`, `thread.resolved` and `thread.reopened`.
 
 ```ts
 import { createDogear, webhook } from "@harshi04/dogear/server";
@@ -60,20 +60,20 @@ createDogear({
 
 ### Webhook
 
-`webhook({ url, secret?, headers? })` posts this body. Form snapshots are left out.
+`webhook({ url, secret?, headers?, events?, when? })` posts each event as JSON. It hears new threads and resolves unless `events` says otherwise, and `when(event)` filters by page or person. A new comment also has `author` and `mentioned`. Form snapshots are left out.
 
 ```json
-{ "type": "comment.created", "comment": {}, "thread": [], "author": {}, "mentioned": [], "link": "https://…" }
+{ "type": "thread.created", "actor": {}, "comment": {}, "thread": [], "page": "/pricing", "link": "https://…", "author": {}, "mentioned": [] }
 ```
 
 With `secret`, the `x-dogear-signature` header is `sha256=<hex>`, the HMAC of the body, so you can check it on your end. `webhook()` tries once more after a network error or a 5xx.
 
 ### Your own notifier
 
-A notifier is a `(event: Created) => Promise<void>`. `event.mentioned` lists who to tell, with their emails, already filtered by `canSee`. A notifier that messages each of them in your chat app takes a few lines. `excerpt(comment)` gives the comment's text with @handles as names.
+A notifier is a `(event: Created) => Promise<void>`, and hears every new comment, threads and replies. `event.mentioned` lists who to tell, with their emails, already filtered by `canSee`. A notifier that messages each of them in your chat app takes a few lines. `excerpt(comment)` gives the comment's text with @handles as names.
 
 <Note>
-  A Slack or Teams recipe is on the [roadmap](https://github.com/harshii0509/dogear/blob/main/ROADMAP.md).
+  Recipes for Slack, Microsoft Teams, Notion, Linear, GitHub and a Supabase trigger are in the [connector recipes](https://github.com/harshii0509/dogear/blob/main/docs/connectors/README.md).
 </Note>
 
 ## Links to a thread
