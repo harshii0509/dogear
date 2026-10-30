@@ -1,0 +1,192 @@
+/*
+ * The docs in dogear.harshux.com's light look: a white page, ink text, #f6f6f3 cards with a
+ * 0.5px forest-tinted ring instead of borders, Inter headings at 500, and lime only as a mark.
+ */
+:root {
+  --dg-ink: #121715;
+  --dg-forest: #0f2a21;
+  --dg-lime: #a8e52e;
+  --dg-card: #f6f6f3;
+  --dg-card-hover: #f1f1ec;
+  --dg-ring: 0 0 0 0.5px rgb(15 42 33 / 0.16);
+  --dg-line: rgb(15 42 33 / 0.08);
+  --dg-ease: ease;
+}
+
+::selection {
+  background: rgb(168 229 46 / 0.35);
+  color: var(--dg-ink);
+}
+
+/* Text */
+#content {
+  color: rgb(18 23 21 / 0.8);
+}
+#page-title {
+  color: var(--dg-ink);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+#content h2,
+#content h3,
+#content h4 {
+  color: var(--dg-ink);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+#content strong {
+  color: var(--dg-ink);
+  font-weight: 500;
+}
+
+/* Links: ink with a soft underline that firms up on hover, as on the site. */
+#content a:not(.card) {
+  color: var(--dg-ink);
+  font-weight: 500;
+  border-bottom: 0;
+  text-decoration-line: underline;
+  text-decoration-color: rgb(18 23 21 / 0.2);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition: text-decoration-color 150ms var(--dg-ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  #content a:not(.card):hover {
+    text-decoration-color: rgb(18 23 21 / 0.5);
+  }
+}
+
+/* Inline code */
+#content :not(pre) > code {
+  background: var(--dg-card);
+  color: var(--dg-ink);
+  border: 0;
+  border-radius: 6px;
+  box-shadow: var(--dg-ring);
+}
+
+/* Code blocks */
+#content .code-block {
+  background: var(--dg-card);
+  border: 0;
+  border-radius: 12px;
+  box-shadow: var(--dg-ring);
+}
+#content .code-block [data-component-part="code-block-root"],
+#content .code-block pre {
+  background: transparent;
+}
+
+/*
+ * Code in the site's own colours, never red or blue. Shiki writes github-light's colours inline,
+ * so each one is mapped to ours (and needs !important to beat the inline style).
+ */
+#content pre span[style*="color:#24292E"],
+#content pre span[style*="color:#6F42C1"],
+#content pre span[style*="color:#E36209"] {
+  color: var(--dg-ink) !important;
+}
+#content pre span[style*="color:#D73A49"] {
+  color: var(--dg-forest) !important;
+  font-weight: 500;
+}
+#content pre span[style*="color:#032F62"] {
+  color: #3f7a2a !important;
+}
+#content pre span[style*="color:#005CC5"],
+#content pre span[style*="color:#22863A"] {
+  color: #5f8f14 !important;
+}
+#content pre span[style*="color:#6A737D"] {
+  color: rgb(18 23 21 / 0.45) !important;
+}
+
+/* Cards */
+#content .card {
+  background: var(--dg-card);
+  border: 0;
+  border-radius: 12px;
+  box-shadow: var(--dg-ring);
+  transition: background-color 150ms var(--dg-ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  #content a.card:hover {
+    background: var(--dg-card-hover);
+  }
+}
+#content .card [data-component-part="card-title"] {
+  color: var(--dg-ink);
+  font-weight: 500;
+}
+#content .card [data-component-part="card-icon"] svg {
+  background-color: var(--dg-forest);
+}
+
+/* Callouts: the card grey, a lime tint for tips, a muted amber for warnings. */
+#content .callout {
+  background: var(--dg-card);
+  border: 0;
+  border-radius: 12px;
+  box-shadow: var(--dg-ring);
+  color: rgb(18 23 21 / 0.8);
+}
+#content .callout [data-component-part="callout-content"] {
+  color: rgb(18 23 21 / 0.8);
+}
+#content .callout [data-component-part="callout-icon"],
+#content .callout [data-component-part="callout-icon"] svg {
+  color: var(--dg-forest);
+}
+#content .callout[data-callout-type="tip"] {
+  background: rgb(168 229 46 / 0.12);
+  box-shadow: 0 0 0 0.5px rgb(95 143 20 / 0.3);
+}
+#content .callout[data-callout-type="warning"],
+#content .callout[data-callout-type="danger"] {
+  background: #fbf6e6;
+  box-shadow: 0 0 0 0.5px rgb(128 100 24 / 0.25);
+}
+#content .callout[data-callout-type="warning"] [data-component-part="callout-icon"],
+#content .callout[data-callout-type="warning"] [data-component-part="callout-icon"] svg,
+#content .callout[data-callout-type="danger"] [data-component-part="callout-icon"],
+#content .callout[data-callout-type="danger"] [data-component-part="callout-icon"] svg {
+  color: #806418;
+}
+
+/* Tables: hairline rows, headers at 500. */
+#content table th {
+  color: var(--dg-ink);
+  font-weight: 500;
+  border-bottom: 1px solid rgb(15 42 33 / 0.14);
+}
+#content table td {
+  border-bottom: 1px solid var(--dg-line);
+}
+
+/* Tabs */
+#content [data-component-part="tab-button"][data-active="true"] {
+  color: var(--dg-ink);
+  border-color: var(--dg-forest);
+}
+
+/* Sidebar: the page you're on is ink on a faint lime wash, with a lime mark. */
+#sidebar-content li[data-active] > a {
+  color: var(--dg-ink);
+  font-weight: 500;
+  background: rgb(168 229 46 / 0.14);
+  border-color: var(--dg-lime);
+}
+
+/* On this page */
+.toc-item[data-active] > a,
+.toc-item[data-active-deepest] > a {
+  color: var(--dg-ink);
+  border-color: var(--dg-lime);
+}
+
+/* Search */
+[data-search-item="trigger"] {
+  background: var(--dg-card);
+  border: 0;
+  box-shadow: var(--dg-ring);
+}

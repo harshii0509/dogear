@@ -21,7 +21,19 @@
     "library": "lucide"
   },
   "appearance": {
-    "default": "system"
+    "default": "light",
+    "strict": true
+  },
+  "background": {
+    "color": {
+      "light": "#FFFFFF",
+      "dark": "#FFFFFF"
+    }
+  },
+  "styling": {
+    "codeblocks": {
+      "theme": "github-light"
+    }
   },
   "navbar": {
     "links": [
