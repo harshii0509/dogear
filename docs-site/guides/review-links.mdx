@@ -4,7 +4,7 @@ description: "Show Dogear only to reviewers who open a link with ?review, and ke
 keywords: ["review", "activation", "param", "preview", "enabled", "staging"]
 ---
 
-To review a page without everyone else seeing the layer, set `activation="param"` and send reviewers a link with `?review`.
+To review a page without everyone else seeing the widget, set `activation="param"` and send reviewers a link with `?review`.
 
 <CodeGroup>
 
@@ -18,11 +18,11 @@ To review a page without everyone else seeing the layer, set `activation="param"
 
 </CodeGroup>
 
-- **`?review`** shows the layer, then keeps it for the rest of the tab.
+- **`?review`** shows the widget, then keeps it for the rest of the tab.
 - **`?review=off`** ends it.
 - **Plain visitors** see a clean page.
 
-The parameter isn't part of where comments live, so `/pricing?review` and `/pricing` share threads.
+Threads are keyed by path without the query, so `/pricing?review` and `/pricing` share them.
 
 ## A different parameter
 
@@ -50,4 +50,4 @@ In React, `enabled={false}` renders nothing, so you can turn Dogear on per envir
 
 ## Knowing when comments open
 
-`onActiveChange` is called with `true` or `false` when someone opens or closes comments, or a thread link opens them, such as for analytics. It isn't called on a reload.
+`onActiveChange` is called with `true` or `false` when someone opens or closes comments, or a thread link opens them. Use it for analytics. It isn't called on a reload.

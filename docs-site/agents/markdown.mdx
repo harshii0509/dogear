@@ -1,6 +1,6 @@
 ---
 title: "Copy as Markdown"
-description: "Hand feedback to any agent by hand. Every thread copies as Markdown with its element's label, selector and text."
+description: "Paste threads into any agent. Every thread copies as Markdown with its element's label, selector and text."
 keywords: ["markdown", "copy", "toMarkdown", "threads", "playwright"]
 ---
 
@@ -16,7 +16,7 @@ Each thread comes out with its element's label, selector and text, its status an
 From a script, Playwright or an agent, with the element on the page, use the `Dogear` global.
 
 ```js
-await Dogear.threads();  // every comment on this path, through the layer's adapter
+await Dogear.threads();  // every comment on this path, through the widget's adapter
 await Dogear.markdown(); // the same, as Markdown
 ```
 

@@ -57,7 +57,7 @@ The same global also has `Dogear.threads()` and `Dogear.markdown()`. See [Copy a
 
 ## Keep your own shortcuts quiet
 
-While comment mode is on, the layer's host on the page carries `data-active`, so a page shortcut can stand down instead of firing while someone writes. Key events from Dogear's fields reach the page retargeted to that host, so check `event.composedPath()[0]` instead of `event.target`.
+While comment mode is on, the widget's host on the page carries `data-active`, so a page shortcut can stand down instead of firing while someone writes. Key events from Dogear's fields reach the page retargeted to that host, so check `event.composedPath()[0]` instead of `event.target`.
 
 ```js
 addEventListener("keydown", (event) => {

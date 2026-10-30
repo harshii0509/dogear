@@ -1,11 +1,11 @@
 ---
-title: "Your own API"
+title: "The contract"
 sidebarTitle: "Your own API, the contract"
 description: "The Comment shape, the adapter's functions, the rules every backend keeps, and the REST shape for httpAdapter."
 keywords: ["adapter", "contract", "rest", "httpAdapter", "validateNew", "guests", "agent token", "firebase"]
 ---
 
-Dogear talks to an **adapter**, a few async functions you implement against whatever you use. Any backend that keeps the rules below works. On Node, [`createDogear`](/backends/server) keeps all of them for you.
+Dogear talks to an adapter, five async functions plus optional extras, which you write against whatever you use. Any backend that keeps the rules below works. On Node, [`createDogear`](/backends/server) keeps all of them for you.
 
 ## The Comment
 
@@ -36,7 +36,7 @@ type Comment = {
 import type { Adapter } from "@harshi04/dogear";
 
 const adapter: Adapter = {
-  me,       // () => Promise<User | null>          null hides the layer (signed out)
+  me,       // () => Promise<User | null>          null hides the widget (signed out)
   list,     // (path) => Promise<Comment[]>         every comment whose page's path is `path`, oldest first
   create,   // (NewComment) => Promise<Comment>     NewComment = { page, body, parentId, anchor }
   update,   // (id, { body } | { resolved }) => Promise<Comment>
@@ -71,7 +71,7 @@ const adapter: Adapter = {
     `remove` returns every id that went.
   </Step>
   <Step title="Throw on failure">
-    The layer rolls back its optimistic change and shows a toast.
+    The widget rolls back its optimistic change and shows a toast.
   </Step>
 </Steps>
 
@@ -97,18 +97,18 @@ For reactions, `toggleReaction` and `cleanReaction` check for exactly one emoji 
 ### Errors and outages
 
 - **Any non-2xx is a failure.**
-- **A 422 means the route refused the text itself,** such as a moderation check on a comment, an edit or a guest's name. Answer `{ "error": "…" }` and the layer shows that line to the writer, keeping what they wrote so they can change it.
-- **When your backend is down, answer 503,** or anything but 401 or 403 on `/me`. The layer hides after two failed looks in a row, or at once if it never loaded. It looks again after 30 seconds, then 1 and 2 minutes, and comes back when you do.
+- **A 422 means the route refused the text itself,** such as a moderation check on a comment, an edit or a guest's name. Answer `{ "error": "…" }` and the widget shows that line to the writer, keeping what they wrote so they can change it.
+- **When your backend is down, answer 503,** or anything but 401 or 403 on `/me`. The widget hides after two failed requests in a row, or at once if it never loaded. It tries again after 30 seconds, then 1 and 2 minutes, and comes back when you do.
 - **Requests time out after 8 seconds.** Change it with `httpAdapter(…, { timeout })`.
-- **Nothing the backend sends can break the host page.** Rows that can't be drawn are dropped, and a render error removes only the layer.
+- **Nothing the backend sends can break the host page.** Rows that can't be drawn are dropped, and a render error removes only the widget.
 
 ## Guests
 
-On a public page, such as a portfolio or docs, visitors have no account. With `join`, the layer shows them the threads read-only and asks for a name the first time they write.
+On a public page, such as a portfolio or docs, visitors have no account. With `join`, the widget shows them the threads read-only and asks for a name the first time they write.
 
 - **Your backend mints the guest.** `POST /me { name }` creates a random id, keeps it in the session in an httpOnly cookie, signed or server-side, and returns the `User`. Never accept an id from the browser.
 - **Names are 1 to 40 characters** after trimming. `cleanName` from `@harshi04/dogear` does it.
-- **`tint` is the avatar they picked,** when the page offers some through `avatars`. It's a key, not a colour. Keep it on the user and their comments only if it's one of your page's keys, and `cleanTint` checks its shape. Drop anything else, and the layer picks one by id.
+- **`tint` is the avatar they picked,** when the page offers some through `avatars`. It's a key, not a colour. Keep it on the user and their comments only if it's one of your page's keys, and `cleanTint` checks its shape. Drop anything else, and the widget picks one by id.
 - **Public pages need limits.** Rate-limit `create` and `POST /me` per guest and per IP. Consider letting only a thread's author or an admin resolve it, pass `resolvers="authors"` so the button agrees, and keep an admin who can delete.
 
 ## Agent tokens
@@ -121,12 +121,12 @@ if (bearer(request) === process.env.DOGEAR_AGENT_TOKEN) return { id: "agent", na
 
 - Compare tokens in constant time, keep the token out of the browser, and rotate it like any key.
 - `agent: true` puts an **Agent** badge on its comments. The usual rules still apply. It can edit only its own comments, and it isn't an admin unless you say so.
-- Return every page from `GET ?all=1`, the adapter's `listAll`, so the agent can see all open feedback at once.
+- Return every page from `GET ?all=1`, the adapter's `listAll`, so the agent can see every open thread at once.
 
-`createDogear({ agentToken })` does all of this for you.
+`createDogear({ agentToken })` does all of this.
 
 ## Live updates
 
-Without `subscribe`, the layer polls `list` every 3 seconds while comment mode is on and the tab is visible. That's plenty for a review with a handful of people.
+Without `subscribe`, the widget polls `list` every 3 seconds while comment mode is on and the tab is visible. That's plenty for a review with a handful of people.
 
-If your backend pushes changes, as Supabase Realtime, Firestore `onSnapshot`, Convex, Liveblocks or Pusher do, implement `subscribe` and call `onChange()` whenever a comment on that path changes. The layer then fetches again.
+If your backend pushes changes, as Supabase Realtime, Firestore `onSnapshot`, Convex, Liveblocks or Pusher do, implement `subscribe` and call `onChange()` whenever a comment on that path changes. The widget then fetches again.

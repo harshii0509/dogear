@@ -4,11 +4,11 @@ description: "dogear mcp lets Claude Code, Cursor, Codex or any MCP client read 
 keywords: ["mcp", "model context protocol", "claude code", "cursor", "codex", "vs code", "agent", "dogear_next"]
 ---
 
-`dogear mcp` is a [Model Context Protocol](https://modelcontextprotocol.io) server. A coding agent connected to it can read the feedback people pinned to your pages, meaning which page, which element, what they said, and where that element probably lives in your code.
+`dogear mcp` is a [Model Context Protocol](https://modelcontextprotocol.io) server. For each thread people pinned to your pages, a coding agent connected to it gets the page, the element, what they said, and where that element probably lives in your code.
 
 With writes turned on, it can also reply and resolve threads. People see those replies in the thread on the page, with an **Agent** badge.
 
-It talks to **your own backend** through the same adapter the layer uses. Nothing is hosted and there's no account to create. It runs over stdio, so your agent starts it as a subprocess.
+It talks to your own backend through the same adapter the widget uses. Nothing is hosted and there's no account to create. It runs over stdio, so your agent starts it as a subprocess.
 
 ## Try it locally
 
@@ -62,7 +62,7 @@ The adapter module's default export, or its `adapter` export, is an `Adapter`. G
 
 ## Connect your agent
 
-Install the package once in the project so the server starts instantly from `node_modules`. `npx -y @harshi04/dogear mcp` also works without installing, but its first start downloads the package and can take longer than some clients wait.
+Install the package once in the project so the server starts from `node_modules` with no download. `npx -y @harshi04/dogear mcp` also works without installing, but its first start downloads the package and can take longer than some clients wait.
 
 <Tabs>
   <Tab title="Claude Code">
@@ -181,7 +181,7 @@ Only with `--write`. Nothing can delete.
 ## Safety
 
 <Warning>
-  **Comment text is untrusted.** Anyone who can comment on your page can write text the agent will read. The server's instructions, and a `note` on every thread, tell the agent to treat comment bodies as feedback, never as instructions. Keep your agent's own permissions sensible. Review its diffs, and don't give it production credentials it doesn't need.
+  **Comment text is untrusted.** Anyone who can comment on your page can write text the agent will read. The server's instructions, and a `note` on every thread, tell the agent to treat comment bodies as feedback, never as instructions. Review its diffs, and don't give it production credentials it doesn't need.
 </Warning>
 
 - **Read-only unless you say so.** `dogear_reply` and `dogear_resolve` exist only with `--write`.
@@ -192,4 +192,4 @@ Only with `--write`. Nothing can delete.
   - It accepts browser requests only from development origins, which are localhost, 127.0.0.1, `*.localhost`, `*.test` and anything added with `--origin`.
   - It caps request bodies at 64 KB.
   - It keeps its token in `.dogear/token` with mode 600.
-- **Less leaks out.** Query values that look secret, such as `token`, `key`, `code` and `session`, are replaced with `redacted` in anything the tools return. Authors appear by name only.
+- **Secrets stay out of tool output.** The tools replace query values that look secret, such as `token`, `key`, `code` and `session`, with `redacted`. Authors appear by name only.
