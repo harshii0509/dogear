@@ -30,17 +30,17 @@ Run `npm test`, `npm run typecheck` and `npm run build` before you say a change 
   `src/element.ts`, the props table in `README.md` and `docs-site/reference/props.mdx`, and `CHANGELOG.md`. The README ships in the npm
   package, and the setup prompt sends agents to it, so keep the table exact.
 - **What the server accepts or returns** changes `docs/contract.md`, `docs-site/backends/contract.mdx` and `test/server.test.ts` with it.
-- **The guides** live twice: Markdown in `docs/` (shipped in the npm package) and MDX in `docs-site/` (the docs site). Change both.
+- **The guides** live in two places, as Markdown in `docs/` (shipped in the npm package) and as MDX in `docs-site/` (the docs site). Change both.
 - **A new module** gets its own `test/<module>.test.ts`.
 
 ## Gotchas
 
-- Postgres JSON parameters are cast `$n::text::jsonb`, never a bare `::jsonb`: some clients encode
-  the string twice (see `src/server/postgres.ts`).
+- Postgres JSON parameters are cast `$n::text::jsonb`, never a bare `::jsonb`, because some clients
+  encode the string twice (see `src/server/postgres.ts`).
 - After a build, pack with `npm pack --ignore-scripts`; without it you can ship stale `.d.ts` files.
 
 ## Boundaries
 
-- Work on a branch and open a pull request. Don't push to `main`, and don't publish to npm: the maintainer does both.
+- Work on a branch and open a pull request. Don't push to `main`, and don't publish to npm. The maintainer does both.
 - Never commit secrets or `.env` files. Example values go in docs as placeholders.
-- Example people in docs, tests and demos are made up: Alex Doe, Sam, Jordan Lee, Riley and Casey, and the assistant is Scout. Use example domains such as `acme.test`. No real people or companies.
+- Example people in docs, tests and demos are made up. They're Alex Doe, Sam, Jordan Lee, Riley and Casey, the assistant is Scout, and the demo product is Fernhill. Use example domains such as `fernhill.test`. No real people or companies.

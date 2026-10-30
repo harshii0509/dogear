@@ -1,21 +1,21 @@
 ---
 title: "Mentions and alerts"
-description: "Tag teammates with @, show them in the app, and tell them wherever your team talks with a webhook or your own notifier."
+description: "Tag teammates with @, show them in the app, and tell them outside the page with a webhook or your own notifier."
 keywords: ["mentions", "@", "alerts", "notify", "webhook", "notifier", "directory"]
 ---
 
 ## Mentions
 
-With `auth`, typing `@` in a comment lists the people who have signed in, and picking one puts `@handle` in the text. A handle is the `handle` your `auth` returns, else the part of the email before the @, such as `jordan.lee`, else the name. Mentions are kept on the comment as `mentions` and drawn as the person's name.
+With `auth`, typing `@` in a comment lists the people who have signed in, and picking one puts `@handle` in the text. A handle is the `handle` your `auth` returns, else the part of the email before the @, such as `jordan.lee`, else the name. Dogear keeps mentions on the comment as `mentions` and draws each one as the person's name.
 
-- **Only people who have signed in can be mentioned.** Everyone `auth` returns is remembered, so a handle that's nobody stays plain text.
+- **Only people who have signed in can be mentioned.** Dogear remembers everyone `auth` returns, so a handle that's nobody stays plain text.
 - **Only they can mention.** A guest's `@name` stays plain text, so a stranger can't ping your team.
 - **Only those who can open the page.** Someone mentioned on a page `canSee` hides from them is skipped. The response names them, and the writer sees "Sam can't open this page. So they won't see this comment or be alerted."
 - **Editing a comment** says again who it mentions.
 
 ### Your own people
 
-With a `directory`, your own records decide who can be mentioned. `list()` is everyone, and `find(handle)` can name someone who isn't in it yet, such as any `handle@yourcompany.com`. Their email stays on the server, for alerts. `GET /people` and comments never show it.
+With a `directory`, your own records decide who can be mentioned. `list()` returns everyone, and `find(handle)` can name someone who isn't in it yet, such as any `handle@fernhill.test`. Their email stays on the server, for alerts. `GET /people` and comments never show it.
 
 ```ts
 createDogear({
@@ -70,10 +70,10 @@ With `secret`, the `x-dogear-signature` header is `sha256=<hex>`, the HMAC of th
 
 ### Your own notifier
 
-A notifier is `(event: Created) => Promise<void>`. `event.mentioned` is who to tell, emails included, already checked with `canSee`, so a notifier that messages each of them in your chat app takes a few lines. `excerpt(comment)` gives the comment's text with @handles as names.
+A notifier is a `(event: Created) => Promise<void>`. `event.mentioned` lists who to tell, with their emails, already filtered by `canSee`. A notifier that messages each of them in your chat app takes a few lines. `excerpt(comment)` gives the comment's text with @handles as names.
 
 <Note>
-  Slack, email and a shared outbox that retries across restarts are on the [roadmap](https://github.com/harshii0509/dogear/blob/main/ROADMAP.md).
+  A Slack or Teams recipe is on the [roadmap](https://github.com/harshii0509/dogear/blob/main/ROADMAP.md).
 </Note>
 
 ## Links to a thread

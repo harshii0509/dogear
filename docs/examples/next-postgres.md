@@ -1,12 +1,15 @@
-# Next.js + any Postgres (Neon, RDS, Supabase-as-Postgres, local)
+# Next.js and Postgres
 
 > This guide is also on the docs site, at [dogear.harshux.com/docs/backends/next-postgres](https://dogear.harshux.com/docs/backends/next-postgres).
 
-`createDogear` from `@harshi04/dogear/server` keeps the REST contract in one route, over your Postgres, with
-`httpAdapter` in the browser. Auth is whatever your app already has (NextAuth, Clerk, Better
-Auth, a session cookie), or none: visitors give a name.
+`createDogear` from `@harshi04/dogear/server` keeps the REST contract in one route over your
+Postgres, whether that's Neon, RDS, Supabase used as plain Postgres, or a local database. The
+browser uses `httpAdapter`. Sign-in is whatever your app already has, such as NextAuth, Clerk,
+Better Auth or a session cookie. If there's none, visitors give a name.
 
-## 1. The route: `app/api/comments/[[...rest]]/route.ts`
+## 1. Add the route
+
+It goes in `app/api/comments/[[...rest]]/route.ts`.
 
 ```ts
 import { createDogear, postgresStore } from "@harshi04/dogear/server";
@@ -31,7 +34,7 @@ const dogear = createDogear({
 export { dogear as GET, dogear as POST, dogear as PATCH, dogear as DELETE };
 ```
 
-Other clients, same store:
+Using another client? The store is the same.
 
 ```ts
 // Neon:          const sql = neon(process.env.DATABASE_URL!);
@@ -40,16 +43,16 @@ Other clients, same store:
 //                postgresStore({ query: (text, params) => pool.query(text, params).then((r) => r.rows) })
 ```
 
-No accounts on your site? Drop `auth` and let visitors comment under a name:
+No accounts on your site? Drop `auth` and let visitors comment under a name.
 
 ```ts
 createDogear({ store, guests: true, secret: process.env.DOGEAR_SECRET }); // 32+ random characters
 ```
 
-and use `httpAdapter("/api/comments", { guests: true })` in the browser. Every option is in
+Then use `httpAdapter("/api/comments", { guests: true })` in the browser. Every option is in
 [docs/server.md](../server.md).
 
-## 2. Mount it
+## 2. Mount the widget
 
 ```tsx
 // app/dogear-comments.tsx
@@ -61,7 +64,7 @@ export const DogearComments = () => <Comments adapter={adapter} shortcut="c" />;
 
 Render `<DogearComments />` once in `app/layout.tsx`.
 
-## Already made a `comments` table from an older version of this guide?
+## Already have a comments table from an older guide
 
 Pass `table: "comments"`. The store adds the columns it's missing (`author_admin`,
 `author_agent`, `ip_hash`, `author_tint`, `reactions`) and keeps your rows.
