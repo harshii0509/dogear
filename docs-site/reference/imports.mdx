@@ -1,0 +1,24 @@
+---
+title: "What to import from where"
+sidebarTitle: "Entry points"
+description: "The package's entry points and the dogear command, and what each one holds."
+keywords: ["imports", "entry points", "exports", "react", "server", "element", "cli"]
+---
+
+| Import | What it holds |
+| --- | --- |
+| `@harshi04/dogear` | `localAdapter`, `httpAdapter`, `validateNew`, `toMarkdown`, and the types such as `Comment`, `User` and `Adapter`. No DOM, so it's safe on a server |
+| `@harshi04/dogear/react` | `<Comments>`, `useDogearSnapshot` and `peekSnapshot`, plus everything in the main entry |
+| `@harshi04/dogear/element` | Defines `<dogear-comments>`, with `mount`, `threads` and `markdown`. The CDN's `element.global.js` is the same, as the global `Dogear` |
+| `@harshi04/dogear/server` | `createDogear`, the stores (`memoryStore`, `fileStore`, `postgresStore`, `schema`) and `webhook`. Node only, and the browser never imports it |
+| `npx dogear` | The command line. `dogear serve` runs a local comments server, and `dogear mcp` connects coding agents |
+
+## The command line
+
+```bash
+npx dogear serve          # a local comments server in .dogear/, on 127.0.0.1:4848
+npx dogear serve --guest  # the same, with guests
+npx dogear mcp            # the MCP server for coding agents
+```
+
+See [The MCP server](/agents/mcp) for every `dogear mcp` option.

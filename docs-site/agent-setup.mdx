@@ -1,0 +1,68 @@
+---
+title: "Set it up with your coding agent"
+description: "Paste one prompt into Claude Code, Cursor or Codex. It looks at your project, asks four questions, then sets up comments and a backend to match."
+keywords: ["claude code", "cursor", "codex", "agent", "prompt", "setup"]
+---
+
+Open your coding agent in your project and paste the prompt below. It's an ordinary request in your own words. The agent looks at your project, asks you four questions, sets Dogear up, and ends with a list of what's left for you to do.
+
+It asks before it installs anything, it leaves your secrets to you, and nothing is sent anywhere.
+
+```text Prompt
+I'd like to add Dogear (npm: @harshi04/dogear, MIT licence) to this project. It's Figma-style
+comments on our pages: pins, threads, replies and resolve. Please set it up with me.
+
+1. First look around: our framework, any sign-in we already have, our database, and where we
+   host. Then ask me these in one message, with your recommendation for each:
+   - Where should comments be stored? (For a Node or Next.js app, Dogear's own route handler
+     over our Postgres. A JSON file or memory just to try it. Or an adapter for Supabase or our
+     own API.)
+   - Who can comment? (Our existing sign-in, or visitors who just give a name.)
+   - Who should see comments? (Everyone, or only some pages or environments.)
+   - Should my coding agent be able to read and reply to comments? (Dogear has an MCP server.)
+   Please wait for my answers before installing anything.
+
+2. Install @harshi04/dogear and set it up the way I choose. Use the package's docs as the
+   reference: node_modules/@harshi04/dogear/README.md, docs/server.md (createDogear, stores
+   and options), docs/contract.md (the rules every backend keeps) and docs/examples/.
+   - The author of a comment should come from the server (our session, or Dogear's signed
+     guest cookie), never from the browser.
+   - Mount the comments once, near the root of the app.
+
+3. For secrets, please add the variable names to .env.example (or list them for me) and leave
+   the values to me. Don't commit, push or deploy; I'll do that myself.
+
+4. Check that it works: typecheck and build, and if there's a route, start the dev server and
+   try GET /me and a POST with curl.
+
+5. Finish with two short lists:
+   - Done: each file you added or changed, one line each.
+   - My turn: what I still need to do, in order. Include each environment variable to set
+     (locally and on our host) and how to make its value, any database step, and how to try
+     it (open the app, press C, drop a pin, reply). Then the optional extras: theming with the
+     --dogear-* CSS variables, moderation, and connecting a coding agent (MCP).
+```
+
+## What the agent asks
+
+| Question | What the agent usually recommends |
+| --- | --- |
+| Where should comments be stored? | Dogear's own route over your Postgres for a Node or Next.js app. A JSON file or memory to try it. An adapter for Supabase or your own API |
+| Who can comment? | Your existing sign-in, or visitors who give a name |
+| Who should see comments? | Everyone, or only some pages or environments |
+| Should your coding agent read and reply? | Yes, through the [MCP server](/agents/mcp) |
+
+<Tip>
+  The docs the prompt points to ship inside the npm package, so the agent reads them from `node_modules` and needs no network access.
+</Tip>
+
+## Prefer to do it yourself
+
+<Columns cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Install, mount and comment in three steps.
+  </Card>
+  <Card title="Pick a backend" icon="database" href="/backends/overview">
+    Choose where comments live.
+  </Card>
+</Columns>

@@ -1,5 +1,7 @@
 # Dogear for coding agents: `dogear mcp`
 
+> This guide is also on the docs site, at [dogear.harshux.com/docs/agents/mcp](https://dogear.harshux.com/docs/agents/mcp).
+
 `dogear mcp` is a [Model Context Protocol](https://modelcontextprotocol.io) server. A coding agent
 connected to it can read the feedback people pinned to your pages: which page, which element, what
 they said, and where that element probably lives in your code. With writes turned on, it can also

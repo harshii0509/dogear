@@ -1,0 +1,88 @@
+---
+title: "Quickstart"
+description: "Add Dogear to a React or Next.js app, press C and leave your first comment."
+keywords: ["install", "react", "next.js", "setup", "getting started"]
+---
+
+<Steps>
+  <Step title="Install the package">
+    ```bash
+    npm install @harshi04/dogear
+    ```
+
+    pnpm, yarn and bun work the same way.
+  </Step>
+  <Step title="Render the comments once">
+    Mount Dogear once, near the root of your app.
+
+    <Tabs>
+      <Tab title="React">
+        ```tsx App.tsx
+        import { Comments } from "@harshi04/dogear/react";
+
+        export function App() {
+          return (
+            <>
+              {/* …your app */}
+              <Comments shortcut="c" />
+            </>
+          );
+        }
+        ```
+      </Tab>
+      <Tab title="Next.js (App Router)">
+        Dogear runs in the browser, so wrap it in a client component.
+
+        ```tsx app/dogear-comments.tsx
+        "use client";
+        import { Comments } from "@harshi04/dogear/react";
+
+        export const DogearComments = () => <Comments shortcut="c" />;
+        ```
+
+        Then render `<DogearComments />` once in `app/layout.tsx`.
+
+        ```tsx app/layout.tsx
+        import { DogearComments } from "./dogear-comments";
+
+        export default function RootLayout({ children }: { children: React.ReactNode }) {
+          return (
+            <html lang="en">
+              <body>
+                {children}
+                <DogearComments />
+              </body>
+            </html>
+          );
+        }
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+  <Step title="Leave your first comment">
+    Open your app and press **C**. Click the button, heading or image you mean, write, and press Enter. Drag instead of clicking to mark an area.
+  </Step>
+</Steps>
+
+<Note>
+  With no adapter, comments are stored in this browser's localStorage. That's enough to try Dogear out, but nobody else sees your comments yet.
+</Note>
+
+## Share comments with your team
+
+To share comments between people, give Dogear a backend. On a Node server, that's one route.
+
+<Columns cols={2}>
+  <Card title="Pick a backend" icon="database" href="/backends/overview">
+    Compare the options and choose one for your stack.
+  </Card>
+  <Card title="Next.js and Postgres" icon="server" href="/backends/next-postgres">
+    The whole setup in two files.
+  </Card>
+</Columns>
+
+## Rules that always hold
+
+- Mount the comments once, near the root of the app. The adapter is read once, on mount.
+- The author of a comment comes from the server, never from the browser.
+- Threads are keyed by path without the query, so `/pricing?review` and `/pricing` share them.

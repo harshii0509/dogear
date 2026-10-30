@@ -1,5 +1,7 @@
 # The contract
 
+> This guide is also on the docs site, at [dogear.harshux.com/docs/backends/contract](https://dogear.harshux.com/docs/backends/contract).
+
 Dogear talks to an **adapter**: five async functions you implement against whatever you use. Any
 backend that keeps the rules below works. On Node, `createDogear` from `@harshi04/dogear/server` keeps all of
 them for you, over Postgres, a file or memory ([server.md](server.md)).

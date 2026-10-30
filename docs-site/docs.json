@@ -1,0 +1,109 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "maple",
+  "name": "Dogear",
+  "description": "Open-source comments for live websites and coded prototypes. Pin feedback to the exact element, on your own backend.",
+  "colors": {
+    "primary": "#0F2A21",
+    "light": "#A8E52E",
+    "dark": "#0F2A21"
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
+    "href": "https://dogear.harshux.com"
+  },
+  "favicon": "/favicon.svg",
+  "fonts": {
+    "family": "Inter"
+  },
+  "icons": {
+    "library": "lucide"
+  },
+  "appearance": {
+    "default": "system"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Changelog",
+        "href": "https://github.com/harshii0509/dogear/blob/main/CHANGELOG.md"
+      }
+    ],
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/harshii0509/dogear"
+    }
+  },
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get started",
+        "pages": ["index", "quickstart", "plain-html", "agent-setup"]
+      },
+      {
+        "group": "Concepts",
+        "pages": ["concepts/how-it-works", "concepts/pins"]
+      },
+      {
+        "group": "Backends",
+        "pages": [
+          "backends/overview",
+          "backends/server",
+          "backends/next-postgres",
+          "backends/supabase",
+          "backends/contract"
+        ]
+      },
+      {
+        "group": "Guides",
+        "pages": [
+          "guides/layouts",
+          "guides/theming",
+          "guides/guests",
+          "guides/mentions",
+          "guides/assistant",
+          "guides/reactions",
+          "guides/forms",
+          "guides/review-links"
+        ]
+      },
+      {
+        "group": "Agents",
+        "pages": ["agents/mcp", "agents/markdown"]
+      },
+      {
+        "group": "Reference",
+        "pages": ["reference/props", "reference/imports", "reference/changelog", "reference/contributing"]
+      }
+    ]
+  },
+  "contextual": {
+    "options": ["copy", "view", "claude", "chatgpt", "cursor"]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/harshii0509/dogear",
+      "website": "https://dogear.harshux.com"
+    },
+    "links": [
+      {
+        "header": "Dogear",
+        "items": [
+          { "label": "Website", "href": "https://dogear.harshux.com" },
+          { "label": "npm", "href": "https://www.npmjs.com/package/@harshi04/dogear" },
+          { "label": "GitHub", "href": "https://github.com/harshii0509/dogear" }
+        ]
+      },
+      {
+        "header": "Project",
+        "items": [
+          { "label": "Changelog", "href": "https://github.com/harshii0509/dogear/blob/main/CHANGELOG.md" },
+          { "label": "Roadmap", "href": "https://github.com/harshii0509/dogear/blob/main/ROADMAP.md" },
+          { "label": "Contributing", "href": "https://github.com/harshii0509/dogear/blob/main/CONTRIBUTING.md" },
+          { "label": "MIT licence", "href": "https://github.com/harshii0509/dogear/blob/main/LICENSE" }
+        ]
+      }
+    ]
+  }
+}

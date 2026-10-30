@@ -1,5 +1,7 @@
 # Supabase
 
+> This guide is also on the docs site, at [dogear.harshux.com/docs/backends/supabase](https://dogear.harshux.com/docs/backends/supabase).
+
 Free tier friendly: Postgres for storage, Supabase Auth for who you are, Row Level Security for
 the rules, and Realtime for live updates. No server code of your own.
 

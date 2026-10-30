@@ -1,0 +1,88 @@
+---
+title: "Pick a backend"
+description: "Comments can live in your Postgres, a JSON file, Supabase, your own API, or the browser while you try it out."
+keywords: ["backend", "adapter", "postgres", "supabase", "firebase", "localStorage", "httpAdapter"]
+---
+
+Dogear talks to an **adapter**, a small object that reads and writes comments. Choose the one that matches what you already run.
+
+| You have | Use |
+| --- | --- |
+| Nothing yet, just trying | `localAdapter()`, the default. Comments stay in this browser |
+| A Node server such as Next.js or Hono | `createDogear` from `@harshi04/dogear/server`, with `httpAdapter("/api/comments")` in the browser. See [The server](/backends/server) and [Next.js and Postgres](/backends/next-postgres) |
+| A server route you write yourself | `httpAdapter("/api/comments")` with the [REST shape](/backends/contract#the-rest-shape) |
+| Supabase | [A ready adapter with Row Level Security and Realtime](/backends/supabase) |
+| Firebase or anything else | Your own [`Adapter`](/backends/contract), five functions |
+
+<Tip>
+  Not sure? Paste the prompt in [Set it up with your coding agent](/agent-setup). It looks at your stack and recommends one.
+</Tip>
+
+## The adapter
+
+Every backend comes down to these functions.
+
+```ts
+type Adapter = {
+  me(): Promise<User | null>;
+  list(path: string): Promise<Comment[]>;
+  create(input: NewComment): Promise<Comment>;
+  update(id: string, patch: { body: string } | { resolved: boolean }): Promise<Comment>;
+  remove(id: string): Promise<string[]>;
+  subscribe?(path: string, onChange: () => void): () => void;
+};
+```
+
+The optional extras, `listAll`, `join`, `react` and `people`, are in [The contract](/backends/contract#the-adapter).
+
+## The whole thing in Next.js
+
+Over Postgres, with visitors who comment under a name, it's two files.
+
+<CodeGroup>
+
+```ts app/api/comments/[[...rest]]/route.ts
+import { createDogear, postgresStore } from "@harshi04/dogear/server";
+import postgres from "postgres";
+
+const sql = postgres(process.env.DATABASE_URL!);
+
+const dogear = createDogear({
+  store: postgresStore({ query: (text, params) => sql.unsafe(text, params as never[]) }), // makes its table on first use
+  guests: true,
+  secret: process.env.DOGEAR_SECRET, // signs the guest cookie, 32+ random characters
+});
+
+export { dogear as GET, dogear as POST, dogear as PATCH, dogear as DELETE };
+```
+
+```tsx app/dogear-comments.tsx
+"use client";
+import { Comments, httpAdapter } from "@harshi04/dogear/react";
+
+const adapter = httpAdapter("/api/comments", { guests: true }); // made once, outside the component
+export const DogearComments = () => <Comments adapter={adapter} shortcut="c" />;
+```
+
+</CodeGroup>
+
+Render `<DogearComments />` once in `app/layout.tsx`.
+
+To use your own sign-in instead of guests, swap `guests` and `secret` for an `auth` function and drop `{ guests: true }` from the adapter.
+
+```ts
+auth: async (request) => /* your session → { id, name, avatar?, admin? } or null */,
+```
+
+## Rules that always hold
+
+- The author of a comment comes from the server, from your session or Dogear's signed guest cookie, never from the browser.
+- Only authors edit. Authors or admins delete. Return `admin: true` from `me()` for your admins.
+- Mount the comments once, near the root of the app. The adapter is read once, on mount.
+- Threads are keyed by path without the query, so `/pricing?review` and `/pricing` share them.
+
+Every rule a backend must keep is in [The contract](/backends/contract).
+
+<Note>
+  Want live cursors and presence? They need a realtime service, and they're on the [roadmap](https://github.com/harshii0509/dogear/blob/main/ROADMAP.md).
+</Note>

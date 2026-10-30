@@ -1,0 +1,81 @@
+---
+title: "Mentions and alerts"
+description: "Tag teammates with @, show them in the app, and tell them wherever your team talks with a webhook or your own notifier."
+keywords: ["mentions", "@", "alerts", "notify", "webhook", "notifier", "directory"]
+---
+
+## Mentions
+
+With `auth`, typing `@` in a comment lists the people who have signed in, and picking one puts `@handle` in the text. A handle is the `handle` your `auth` returns, else the part of the email before the @, such as `jordan.lee`, else the name. Mentions are kept on the comment as `mentions` and drawn as the person's name.
+
+- **Only people who have signed in can be mentioned.** Everyone `auth` returns is remembered, so a handle that's nobody stays plain text.
+- **Only they can mention.** A guest's `@name` stays plain text, so a stranger can't ping your team.
+- **Only those who can open the page.** Someone mentioned on a page `canSee` hides from them is skipped. The response names them, and the writer sees "Sam can't open this page. So they won't see this comment or be alerted."
+- **Editing a comment** says again who it mentions.
+
+### Your own people
+
+With a `directory`, your own records decide who can be mentioned. `list()` is everyone, and `find(handle)` can name someone who isn't in it yet, such as any `handle@yourcompany.com`. Their email stays on the server, for alerts. `GET /people` and comments never show it.
+
+```ts
+createDogear({
+  store,
+  auth,
+  directory: {
+    list: async () => team.map(({ id, name, handle, email }) => ({ id, name, handle, email })),
+    find: async (handle) => team.find((person) => person.handle === handle) ?? null,
+  },
+});
+```
+
+### In the app
+
+`GET /mentions` lists where you were mentioned, on pages you can open, newest 50. The widget asks every 15 seconds while the tab is visible.
+
+- A toast, such as "Alex mentioned you on Pricing", with View.
+- An `@2` badge on the tray's pill.
+- An `@` filter in the list's head.
+
+What you've seen is kept in this browser.
+
+## Alerts
+
+`notify` takes one notifier or a list. Each hears about every new comment after the response, through `defer`, on its own. One that fails goes to `onError`, and the rest still run.
+
+```ts
+import { createDogear, webhook } from "@harshi04/dogear/server";
+import { after } from "next/server";
+
+createDogear({
+  store,
+  auth,
+  defer: after,
+  linkParam: "comment",
+  notify: [
+    webhook({ url: process.env.ALERTS_WEBHOOK!, secret: process.env.ALERTS_SECRET }),
+    dmMentioned, // your own, see below
+  ],
+});
+```
+
+### Webhook
+
+`webhook({ url, secret?, headers? })` posts this body. Form snapshots are left out.
+
+```json
+{ "type": "comment.created", "comment": {}, "thread": [], "author": {}, "mentioned": [], "link": "https://…" }
+```
+
+With `secret`, the `x-dogear-signature` header is `sha256=<hex>`, the HMAC of the body, so you can check it on your end. `webhook()` tries once more after a network error or a 5xx.
+
+### Your own notifier
+
+A notifier is `(event: Created) => Promise<void>`. `event.mentioned` is who to tell, emails included, already checked with `canSee`, so a notifier that messages each of them in your chat app takes a few lines. `excerpt(comment)` gives the comment's text with @handles as names.
+
+<Note>
+  Slack, email and a shared outbox that retries across restarts are on the [roadmap](https://github.com/harshii0509/dogear/blob/main/ROADMAP.md).
+</Note>
+
+## Links to a thread
+
+Every event carries a `link` that opens the thread on its page. `linkParam` sets its query parameter, such as `"comment"` for `?comment=<id>`. Give the widget the same `linkParam`. `?dogear=` always works too, and a reply's id opens its thread.

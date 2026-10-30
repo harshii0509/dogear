@@ -1,0 +1,70 @@
+---
+title: "Guests and sign-in"
+description: "Let visitors comment under a name they give, or use the sign-in your app already has."
+keywords: ["guests", "auth", "sign in", "join", "cookie", "admin", "joinFirst", "avatars"]
+---
+
+Dogear decides who wrote a comment on the server, never in the browser. There are two ways to give it someone.
+
+<Tabs>
+  <Tab title="Guests">
+    Visitors give a name the first time they write. The server signs them in with a cookie.
+
+    ```ts Route
+    createDogear({ store, guests: true, secret: process.env.DOGEAR_SECRET }); // 32+ random characters
+    ```
+
+    ```tsx Widget
+    const adapter = httpAdapter("/api/comments", { guests: true });
+    ```
+
+    On the element, `endpoint` and `guests` do the same.
+
+    ```html
+    <dogear-comments endpoint="/api/comments" guests></dogear-comments>
+    ```
+  </Tab>
+  <Tab title="Your sign-in">
+    Your `auth` function turns the session into a user, with names, photos and admins. @mentions come on too.
+
+    ```ts Route
+    createDogear({
+      store,
+      auth: async (request) => /* your session → { id, name, avatar?, admin? } or null */,
+    });
+    ```
+
+    ```tsx Widget
+    const adapter = httpAdapter("/api/comments");
+    ```
+  </Tab>
+</Tabs>
+
+## How guests work
+
+1. `httpAdapter("/api/comments", { guests: true })` gives the adapter a `join(name)`, which calls `POST /me { name }`.
+2. The route, with `guests: true`, signs the visitor in with a cookie and returns them.
+3. Signed-out visitors see the threads, and are asked for a name the first time they write.
+
+A custom adapter does the same by having a `join(name)`. See [Guests in the contract](/backends/contract#guests).
+
+## Try it locally
+
+- `localAdapter({ user: null })` tries the guest flow in the browser, with no server.
+- `npx dogear serve --guest` runs a local comments server with guests.
+
+## Avatars for guests
+
+With `avatars`, the name step also offers avatars to pick from, with one picked at random to start. The key goes to `POST /me { name, tint }`, and your route keeps it as `User.tint` if it's one of yours. See [Avatars](/guides/theming#avatars).
+
+## Ask for a name up front
+
+With guests and the tray, `joinFirst` (`join-first` on the element) asks a visitor's name and avatar as soon as they open the comments, then shows the threads and pins.
+
+## On a public page
+
+Pair guests with these.
+
+- `resolvers="authors"`, so only a thread's author and admins see Resolve.
+- Rate limits in your route. `createDogear` turns them on with guests.
+- An admin who can delete. Return `admin: true` from `auth`, or use `adminKey` for a site whose only account is its owner. See [Options](/backends/server#options).

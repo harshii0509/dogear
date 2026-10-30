@@ -1,0 +1,33 @@
+---
+title: "Reactions"
+description: "Let people react to comments with emoji, with counts everyone sees."
+keywords: ["reactions", "emoji", "emojibase", "react"]
+---
+
+Pass the emoji people can react with. They show as chips with counts under comments, yours ringed, and a + that unfolds the set.
+
+<CodeGroup>
+
+```tsx React
+<Comments reactions={["❤️", "👍", "😂", "🔥", "👀", "🎉"]} />
+```
+
+```html HTML
+<dogear-comments reactions='["❤️", "👍", "😂", "🔥", "👀", "🎉"]'></dogear-comments>
+```
+
+</CodeGroup>
+
+Reactions need an adapter with `react`. `localAdapter`, `httpAdapter` and `createDogear` have it. For your own route, see the reactions endpoint in [the REST shape](/backends/contract#the-rest-shape).
+
+## Any other emoji
+
+The set's "···" opens a picker with every other emoji. It loads Emojibase's data from jsDelivr, read as `${emojiData}/en/data.json`. To self-host, point `emojiData` (`emoji-data` on the element) at your own copy.
+
+```tsx
+<Comments reactions={["❤️", "👍"]} emojiData="/emojibase-data" />
+```
+
+## Only in an open comment
+
+`reactionsIn="thread"` (`reactions-in` on the element) shows reactions only on an open comment, not in the tray's list.

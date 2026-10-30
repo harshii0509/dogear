@@ -1,0 +1,33 @@
+---
+title: "Copy as Markdown"
+description: "Hand feedback to any agent by hand. Every thread copies as Markdown with its element's label, selector and text."
+keywords: ["markdown", "copy", "toMarkdown", "threads", "playwright"]
+---
+
+## From the page
+
+- **One thread.** Its `•••` menu has **Copy as Markdown**.
+- **Every thread on the page.** In comment mode, **Copy all** copies them all, resolved ones too while **Show resolved** is on.
+
+Each thread comes out with its element's label, selector and text, its status and the replies, ready to paste into Claude, Cursor or an issue.
+
+## From a script
+
+From a script, Playwright or an agent, with the element on the page, use the `Dogear` global.
+
+```js
+await Dogear.threads();  // every comment on this path, through the layer's adapter
+await Dogear.markdown(); // the same, as Markdown
+```
+
+## On a server
+
+`toMarkdown(comments)` from `@harshi04/dogear` builds the same Markdown with no DOM.
+
+```ts
+import { toMarkdown } from "@harshi04/dogear";
+
+const markdown = toMarkdown(await adapter.list("/pricing"));
+```
+
+For an agent that reads and resolves threads itself, see [The MCP server](/agents/mcp).
