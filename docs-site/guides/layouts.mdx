@@ -1,0 +1,59 @@
+---
+title: "Layouts"
+description: "Choose how Dogear sits on the page. A single button, a tray that lists every thread, or a dock you drag anywhere."
+keywords: ["layout", "fab", "tray", "dock", "navigate", "pageLabel"]
+---
+
+Set `layout` on `<Comments>`, or the `layout` attribute on `<dogear-comments>`.
+
+<Tabs>
+  <Tab title="fab">
+    The default. One button turns comment mode on and off, as in Figma. In comment mode, every press places a comment.
+
+    ```tsx
+    <Comments shortcut="c" />
+    ```
+  </Tab>
+  <Tab title="tray">
+    Suits a site with visitors, such as a portfolio or docs.
+
+    - **A pill sits at the bottom right,** with "Leave a comment" and its key.
+    - **Clicking it opens the tray** out of the pill, which stays put as the tray's footer. It's one list, with this page's threads first, then other pages', each showing its path, newest first. Pins show while it's open, and the page stays usable.
+    - **A row on this page** scrolls to its element and opens it. A row on another page goes there with `navigate` and opens it on arrival.
+    - **The shortcut, or the pill again,** places one comment, then returns to the tray. Esc steps back through the draft, the open thread, placing, then the tray.
+    - **Closing the tray** hides every pin.
+
+    ```tsx
+    const router = useRouter();
+    <Comments layout="tray" shortcut="c" navigate={router.push} />;
+    ```
+  </Tab>
+  <Tab title="dock">
+    Suits a product team reviewing an app all day.
+
+    - **A round button** shows the number of open threads on every page. Drag it to any corner, and this browser remembers where.
+    - **Clicking it opens a row of controls.** Add a comment (click to pin, drag for an area), the eye to show or hide pins, the list with the open count, and ✕.
+    - **The list** opens the row into a panel of every thread, this page first, with an `@` filter for mentions of you and a resolved switch. Drag it by its head.
+    - **It opens away from the nearest edges.** Esc steps back one thing at a time, through the panel, the draft, the open thread, placing, then the row. The pins stay until the eye hides them.
+    - **Its first place** is `--dogear-right` and `--dogear-bottom` from the corner, 24px by default.
+
+    ```tsx
+    <Comments layout="dock" shortcut="c" navigate={router.push} />
+    ```
+  </Tab>
+</Tabs>
+
+## Moving between pages
+
+The tray and the dock list threads from every page when your adapter has `listAll`. Two props make that list fit your app.
+
+- **`navigate`** is how a row on another page gets there. Pass your router's `push` to avoid a full page load.
+- **`pageLabel`** is what a page is called in the list, such as `(path) => titles[path] ?? path`.
+
+## A list of comments, without resolving
+
+Set `resolve={false}` (`no-resolve` on the element) for a plain list of comments. Every thread shows, with no Resolve, Reopen or Resolved switch.
+
+```tsx
+<Comments layout="tray" resolve={false} navigate={router.push} />
+```

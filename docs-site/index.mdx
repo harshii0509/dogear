@@ -1,0 +1,45 @@
+---
+title: "Introduction"
+description: "Dogear puts Figma-style comments on any web page. People pin feedback to the exact element, reply in threads and resolve them, and your coding agent can read every thread."
+keywords: ["comments", "feedback", "design review", "pins", "threads", "open source"]
+---
+
+![A pricing page with Dogear. Someone presses C, pins a comment on the Start free trial button and posts it, then opens another thread, replies and reacts.](https://raw.githubusercontent.com/harshii0509/dogear/main/media/demo.gif)
+
+Dogear is one package that adds comments to a website or a coded prototype. Click to drop a pin or drag to mark an area, then write. You get threads, replies, edits, resolve and live updates, in plain HTML, React and Next.js.
+
+Use it for design reviews on a staging site, for feedback from visitors on a live one, or to hand what people said straight to your coding agent.
+
+It's open source under the MIT licence. Comments live on your own backend, with no Dogear service in between.
+
+<Columns cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Add Dogear to a React or Next.js app and leave your first comment.
+  </Card>
+  <Card title="Set it up with your coding agent" icon="bot" href="/agent-setup">
+    Paste one prompt into Claude Code, Cursor or Codex and answer four questions.
+  </Card>
+  <Card title="Pick a backend" icon="database" href="/backends/overview">
+    Postgres, a JSON file, Supabase, Firebase or your own API.
+  </Card>
+  <Card title="The MCP server" icon="terminal" href="/agents/mcp">
+    Let your coding agent read threads, fix what they point at and resolve them.
+  </Card>
+</Columns>
+
+## What you get
+
+- **Pins that stay put.** A comment is anchored to the element under it, so it follows that element through scrolling, resizing and layout changes. See [how pins stay put](/concepts/pins).
+- **Threads.** Reply, @mention a teammate, react, edit and resolve, with Undo.
+- **Your own backend.** One route handler over Postgres, a JSON file or memory, or a five-function adapter over anything else. With no backend at all, comments stay in the browser.
+- **Guests without accounts.** Visitors give a name once and comment, under a cookie your server signs.
+- **A look that fits.** Dark or light glass, or the visitor's system setting, with every colour open to your CSS.
+- **Agents in the loop.** `dogear mcp` hands threads to Claude Code, Cursor or Codex, and their replies show on the page.
+
+## Where it runs
+
+| Setup | Use |
+| --- | --- |
+| Plain HTML | The `<dogear-comments>` element from a script tag. See [Plain HTML](/plain-html) |
+| React | `<Comments>` from `@harshi04/dogear/react`. See the [Quickstart](/quickstart) |
+| Next.js | A small client component, rendered once in your layout. See the [Quickstart](/quickstart) |

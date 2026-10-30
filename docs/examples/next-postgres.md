@@ -1,5 +1,7 @@
 # Next.js + any Postgres (Neon, RDS, Supabase-as-Postgres, local)
 
+> This guide is also on the docs site, at [dogear.harshux.com/docs/backends/next-postgres](https://dogear.harshux.com/docs/backends/next-postgres).
+
 `createDogear` from `@harshi04/dogear/server` keeps the REST contract in one route, over your Postgres, with
 `httpAdapter` in the browser. Auth is whatever your app already has (NextAuth, Clerk, Better
 Auth, a session cookie), or none: visitors give a name.

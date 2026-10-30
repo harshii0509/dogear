@@ -1,0 +1,45 @@
+---
+title: "How it works"
+description: "One widget on your page, one route on your server. Everything past plain commenting switches on when you give it what it needs."
+keywords: ["architecture", "route", "widget", "guests", "mentions", "assistant", "mcp"]
+---
+
+## One widget, one route
+
+The widget on your page talks to a single route that `createDogear` makes. The route checks who you are and what you may see, then stores the comment.
+
+![How Dogear fits together. Your page and the widget talk to one route with optional auth and moderation, a can-see rule and a store. Optional alerts and an assistant run after the response, and coding agents use the same route over MCP.](https://raw.githubusercontent.com/harshii0509/dogear/main/media/how-it-fits.svg)
+
+Everything past plain commenting is optional, and switches on when you give it what it needs. See [what each option turns on](/backends/server#it-works-with-what-you-have).
+
+## Nobody has to sign in
+
+With `guests: true`, a visitor gives a name the first time and comments. The server signs a cookie, so the author never comes from the browser.
+
+![Guests. A visitor gives a name once, comments, and the route stores it under a signed cookie. Mentions and alerts stay off until you add auth.](https://raw.githubusercontent.com/harshii0509/dogear/main/media/guests.svg)
+
+Read more in [Guests and sign-in](/guides/guests).
+
+## Tag someone, and they hear about it
+
+With your own sign-in, `@` lists the people who can open the page. They see it in the app as a toast and an `@` badge, and `notify` can tell them wherever your team talks.
+
+![Mentions. A tag counts only for someone who has signed in and can open the page. They get an in-app alert and your notifier's message, and open the thread from its link.](https://raw.githubusercontent.com/harshii0509/dogear/main/media/mentions.svg)
+
+Read more in [Mentions and alerts](/guides/mentions).
+
+## An assistant that answers in the thread
+
+Give `assistant` your own `answer(thread)` function, with your model and your docs. Dogear decides when to ask and saves the reply, marked as AI.
+
+![The assistant. A new thread or an @mention calls your answer function after the response, and the reply is saved in the thread, marked as AI.](https://raw.githubusercontent.com/harshii0509/dogear/main/media/assistant.svg)
+
+Read more in [An AI assistant](/guides/assistant).
+
+## From a comment to a fix, and back
+
+Your coding agent reads the threads over MCP, with each element's selector and text. It makes the change, then replies and resolves.
+
+![MCP. A reviewer pins a comment on an element. A coding agent picks it up with dogear_next, makes a change, replies and resolves, and the reply shows in the thread on the page.](https://raw.githubusercontent.com/harshii0509/dogear/main/media/mcp.svg)
+
+Read more in [The MCP server](/agents/mcp).

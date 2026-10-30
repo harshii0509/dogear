@@ -1,0 +1,57 @@
+---
+title: "Props and attributes"
+description: "Every prop of the React Comments component, next to its attribute on the dogear-comments element."
+keywords: ["props", "attributes", "options", "Comments", "dogear-comments", "mount"]
+---
+
+Each prop of `<Comments>` has an attribute on `<dogear-comments>`, except the ones that take a function or a React node, marked —.
+
+On the element, `endpoint="/api/comments"` makes an `httpAdapter` for you, and `guests` adds `{ guests: true }`. From a script, `Dogear.mount({ adapter, layout, navigate, … })` takes every prop except `enabled` and `icons`, functions included.
+
+## Where comments live
+
+| Prop | Attribute | Default | What it does |
+| --- | --- | --- | --- |
+| `adapter` | `endpoint`, or the element's `adapter` property | `localAdapter()` | Where comments live. Read once, on mount. See [Pick a backend](/backends/overview) |
+| `deletable` | — | its author, or an admin | Who may delete a comment, to match the server's `deletable`. For example, anyone may delete the assistant's |
+
+## Turning it on
+
+| Prop | Attribute | Default | What it does |
+| --- | --- | --- | --- |
+| `shortcut` | `shortcut` | none | A key that toggles comment mode, such as `"c"` |
+| `activation` | `activation` | `"always"` | `"param"` shows the layer only after `?review` is in the URL, then for the rest of the tab. `?review=off` ends it. See [Review links](/guides/review-links) |
+| `reviewParam` | `review-param` | `"review"` | The query parameter `activation="param"` listens for |
+| `enabled` | — | `true` | `false` renders nothing, such as everywhere but preview deploys |
+| `ignore` | `ignore` | none | A CSS selector to keep comments off, such as `"nav, .chat-widget"`. Pressing on a match does nothing |
+| `onActiveChange` | — | none | Called with `true` or `false` when someone opens or closes comments, or a thread link opens them. Not on a reload |
+| `linkParam` | `link-param` | `"dogear"` | The query parameter of a link to a thread, such as `"comment"` for `?comment=<id>`. A reply's id opens its thread, and `?dogear=` always works too |
+
+## Layout
+
+| Prop | Attribute | Default | What it does |
+| --- | --- | --- | --- |
+| `layout` | `layout` | `"fab"` | `"tray"` is a pill that opens into a list of every thread. `"dock"` is a button you drag anywhere that opens into controls and a list. See [Layouts](/guides/layouts) |
+| `navigate` | — | full page load | How a row for another page gets there, such as your router's `push` |
+| `pageLabel` | — | the path | What a page is called in the list, such as `(path) => titles[path] ?? path` |
+| `joinFirst` | `join-first` | `false` | With guests and the tray, opening the comments first asks a visitor's name and avatar, then shows the threads and pins |
+| `locations` | `no-locations` | `true` | `false` hides the page and "on heading …" under comments in the list and on an open one, leaving name, time and text. Pins still show where |
+
+## Threads
+
+| Prop | Attribute | Default | What it does |
+| --- | --- | --- | --- |
+| `resolvers` | `resolvers` | `"anyone"` | `"authors"` shows Resolve only to the thread's author and admins, for public pages |
+| `resolve` | `no-resolve` | `true` | `false` turns off resolving, for a plain list of comments. Every thread shows, with no Resolve, Reopen or Resolved switch |
+| `pick` | `pick` | `"element"` | `"pin"` makes the pin you'd drop, with your avatar, follow the pointer, and a click drops it. Nothing on the page is outlined or named, and there are no areas. For sites whose visitors comment instead of inspect |
+| `reactions` | `reactions='[…]'` | none | The emoji people can react with, such as `["❤️", "👍", "😂", "🔥", "👀", "🎉"]`. Needs an adapter with `react`. See [Reactions](/guides/reactions) |
+| `reactionsIn` | `reactions-in` | `"everywhere"` | `"thread"` shows reactions only on an open comment, not in the tray's list |
+| `emojiData` | `emoji-data` | jsDelivr's `emojibase-data@17` | Where the "···" picker loads every other emoji from, read as `${emojiData}/en/data.json` |
+
+## Look
+
+| Prop | Attribute | Default | What it does |
+| --- | --- | --- | --- |
+| `theme` | `theme` | `"dark"` | `"light"`, or `"auto"` to follow the visitor's system setting. Changing the attribute redraws at once. See [Theming](/guides/theming) |
+| `avatars` | `avatars='{…}'`, or the element's `avatars` property | none | Avatars for people without a photo, by key, such as `{ sky: "linear-gradient(…)" }`. Guests pick one with their name, and everyone else gets one by id |
+| `icons` | — | Dogear's own | Your icon set, by name |

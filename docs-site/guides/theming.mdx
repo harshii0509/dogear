@@ -1,0 +1,76 @@
+---
+title: "Theming"
+description: "Pick dark or light glass, follow the visitor's system setting, or change any colour with CSS custom properties."
+keywords: ["theme", "dark mode", "light mode", "css variables", "custom properties", "glass", "icons"]
+---
+
+Dogear is made of glass, a frosted panel with a lit edge. It comes in two looks, and you pick one with `theme`.
+
+| `theme` | Looks like |
+| --- | --- |
+| `"dark"`, the default | Black at 64% under a 16px blur, with white text. Reads on light, dark and busy pages alike |
+| `"light"` | Frosted white with dark text. For light sites that want the comments to match |
+| `"auto"` | Follows the visitor's system setting (`prefers-color-scheme`) |
+
+```html
+<dogear-comments theme="auto"></dogear-comments>
+```
+
+## Your own dark-mode switch
+
+If your site has its own switch, pass its current mode. The layer changes at once, without a reload.
+
+<CodeGroup>
+
+```tsx React
+<Comments theme={dark ? "dark" : "light"} />
+```
+
+```js HTML
+element.setAttribute("theme", dark ? "dark" : "light");
+```
+
+</CodeGroup>
+
+## Custom properties
+
+The layer draws into a shadow root, so your CSS can't break it and its CSS can't leak out. To change either look, set custom properties on `:root` or any ancestor. They win over both themes.
+
+```css
+:root {
+  --dogear-font: "Inter", sans-serif;
+  --dogear-mark: #7c3aed; /* the pin being placed and the outlines, on your page */
+  --dogear-bottom: 88px; /* move the button up, clear of your own widgets */
+}
+```
+
+The accent marks only the one thing to do next, which is Send once there's text, and focus. Buttons, avatars and fields use the surface and the text colour. What's drawn on the page itself, the pin being placed and the outline while you aim, is the mark. It's blue by default, so it shows on any page.
+
+| Property | What it is |
+| --- | --- |
+| `--dogear-surface` | The panels and pins |
+| `--dogear-backdrop` | Their `backdrop-filter`, `blur(16px)`. Use `none` for solid panels |
+| `--dogear-radius`, `--dogear-row-radius` | Corners of a panel (22px) and of a row (10px) |
+| `--dogear-strong`, `--dogear-text`, `--dogear-muted`, `--dogear-faint`, `--dogear-placeholder` | Text, loudest to quietest |
+| `--dogear-divider`, `--dogear-hover`, `--dogear-well`, `--dogear-field` | Lines, a hovered row, the list's inset tray, and a field in a card |
+| `--dogear-accent`, `--dogear-on-accent`, `--dogear-send-idle` | Send and focus, what's on them, and Send before there's text |
+| `--dogear-highlight`, `--dogear-row-highlight` | Inner shadows, the lit edge of a panel and of a row |
+| `--dogear-shadow`, `--dogear-pin-shadow` | A panel's shadow, and a pin's lighter one |
+| `--dogear-mark`, `--dogear-on-mark` | What's drawn on the page, and the text on it in the aim label |
+| `--dogear-mention`, `--dogear-agent` | An @mention, and the assistant's avatar and badge |
+| `--dogear-changed` | The dot on a thread that changed since you looked |
+| `--dogear-font`, `--dogear-z-index`, `--dogear-right`, `--dogear-bottom` | Type, stacking, and where the button sits |
+
+## Avatars
+
+People without a photo get an avatar by key. Pass the set with `avatars`, and guests pick one with their name.
+
+```tsx
+<Comments avatars={{ sky: "linear-gradient(135deg, #a5d8ff, #4dabf7)", moss: "linear-gradient(135deg, #d3f9d8, #69db7c)" }} />
+```
+
+On the element, pass JSON in the attribute, `avatars='{…}'`, or set the `avatars` property.
+
+## Icons
+
+The React component's `icons` prop takes your own icon set, by name, in place of Dogear's own.

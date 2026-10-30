@@ -27,9 +27,10 @@ Run `npm test`, `npm run typecheck` and `npm run build` before you say a change 
 ## Changes that touch several files
 
 - **A prop** goes into `CommentsProps` in `src/comments.tsx`, its attribute and `mount()` in
-  `src/element.ts`, the props table in `README.md`, and `CHANGELOG.md`. The README ships in the npm
+  `src/element.ts`, the props table in `README.md` and `docs-site/reference/props.mdx`, and `CHANGELOG.md`. The README ships in the npm
   package, and the setup prompt sends agents to it, so keep the table exact.
-- **What the server accepts or returns** changes `docs/contract.md` and `test/server.test.ts` with it.
+- **What the server accepts or returns** changes `docs/contract.md`, `docs-site/backends/contract.mdx` and `test/server.test.ts` with it.
+- **The guides** live twice: Markdown in `docs/` (shipped in the npm package) and MDX in `docs-site/` (the docs site). Change both.
 - **A new module** gets its own `test/<module>.test.ts`.
 
 ## Gotchas

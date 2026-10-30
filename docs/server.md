@@ -1,5 +1,7 @@
 # The server: `@harshi04/dogear/server`
 
+> This guide is also on the docs site, at [dogear.harshux.com/docs/backends/server](https://dogear.harshux.com/docs/backends/server).
+
 `createDogear` is the REST contract ([contract.md](contract.md)) as one function, `Request →
 Response`, so you don't write the route yourself. It runs in a Next.js route handler, `dogear
 serve`, or anything that speaks Fetch (Hono, Remix, Bun, Deno, Express through an adapter), on

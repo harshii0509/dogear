@@ -1,0 +1,25 @@
+---
+title: "Comments that remember a form"
+sidebarTitle: "Forms"
+description: "A comment left halfway through a form keeps the form, so whoever opens it sees what you saw."
+keywords: ["form", "snapshot", "state", "useDogearSnapshot", "peekSnapshot", "registerSnapshot"]
+---
+
+Register the form's state. Dogear saves it with each thread started while the form is on screen, puts it back when the thread is opened, and shows "Showing Alex's form · Back to my form".
+
+```tsx
+import { peekSnapshot, useDogearSnapshot } from "@harshi04/dogear/react";
+
+const [state, setState] = useState(() => ({ ...EMPTY, ...peekSnapshot<Setup>("setup:stripe") }));
+useDogearSnapshot("setup:stripe", state, (saved) => setState(saved));
+```
+
+- **The key** names the form and what it fills in, so a snapshot only lands where it came from.
+- **`peekSnapshot`** covers a thread opened from another page, so the form mounts already filled in.
+- **Any JSON up to 64 KB.** It comes back with its page's comments, and is left out of every-page lists.
+
+## Without React
+
+```js
+Dogear.registerSnapshot(key, get, restore);
+```

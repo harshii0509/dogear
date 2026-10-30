@@ -1,0 +1,41 @@
+---
+title: "How pins stay put"
+description: "A comment is anchored to the element under it, so it follows that element through scrolling, resizing and changes to the page."
+keywords: ["anchor", "selector", "pin", "data-testid", "data-comment-label"]
+---
+
+## Picking the element
+
+In comment mode, the element a press would land on is outlined as you move, with what it is, such as `button "Start free trial"`. That element is the one the comment is anchored to. It's taken when you release, so scrolling while you write doesn't move it.
+
+## What a pin remembers
+
+A pin is stored relative to its element, using two things.
+
+- **A selector.** It starts at the nearest stable `id` or unique `data-testid` (also `data-test`, `data-qa` or `data-cy`). Below that it's structural, such as `div:nth-of-type(2)`, and it reaches into open shadow roots.
+- **A fingerprint.** The element's first 60 characters of text.
+
+It also keeps a viewport position as a fallback, and a short label for the thread card.
+
+<Tip>
+  Add test ids to the elements people comment on. Pins then survive changes to the page above them.
+</Tip>
+
+## Naming an element yourself
+
+Put `data-comment-label` on an element to choose the label its threads show.
+
+```html
+<section data-comment-label="Pricing table">…</section>
+```
+
+## When the page changes
+
+- **Pins follow their element** through scrolling, including inner scroll containers, and resizing.
+- **If the element is gone,** the pin is drawn faded at its fallback position.
+- **If the element's text changed** since the comment was left, the pin gets an amber dot, so you can see which feedback may already be dealt with.
+- **Across tabs,** a pin made on one tab only shows on another if its element is really there.
+
+## Pages and threads
+
+Threads are keyed by path without the query string, so `/settings` and `/settings?tab=billing` share them.

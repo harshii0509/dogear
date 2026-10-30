@@ -1,0 +1,69 @@
+---
+title: "Plain HTML"
+description: "Add Dogear to any page with a script tag and the dogear-comments element."
+keywords: ["html", "script tag", "cdn", "web component", "custom element"]
+---
+
+Dogear ships a custom element, `<dogear-comments>`, for pages without React. The build is one file, `element.global.js`.
+
+## Add it to a page
+
+<Steps>
+  <Step title="Load the script">
+    Load it from a CDN.
+
+    ```html
+    <script src="https://cdn.jsdelivr.net/npm/@harshi04/dogear@0.6/dist/element.global.js"></script>
+    ```
+
+    Or download `element.global.js` from a [release](https://github.com/harshii0509/dogear/releases) and serve it from your own site.
+
+    ```html
+    <script src="/dogear/element.global.js"></script>
+    ```
+  </Step>
+  <Step title="Place the element">
+    ```html
+    <dogear-comments shortcut="c"></dogear-comments>
+    ```
+
+    Press **C** on the page, click anything and write.
+  </Step>
+</Steps>
+
+## Connect a backend
+
+Point the element at your comments route with `endpoint`. It makes an `httpAdapter` for you, and `guests` lets visitors comment under a name.
+
+```html
+<dogear-comments endpoint="/api/comments" guests shortcut="c"></dogear-comments>
+```
+
+Every prop of the React component has an attribute here, except the ones that take a function. See [Props and attributes](/reference/props).
+
+## Mount it from a script
+
+`Dogear.mount` takes every prop except `enabled` and `icons`, functions included.
+
+```js
+Dogear.mount({
+  adapter: myAdapter,
+  layout: "tray",
+  navigate: (path) => router.push(path),
+});
+```
+
+The same global also has `Dogear.threads()` and `Dogear.markdown()`. See [Copy as Markdown](/agents/markdown).
+
+## Keep your own shortcuts quiet
+
+While comment mode is on, the layer's host on the page carries `data-active`, so a page shortcut can stand down instead of firing while someone writes. Key events from Dogear's fields reach the page retargeted to that host, so check `event.composedPath()[0]` instead of `event.target`.
+
+```js
+addEventListener("keydown", (event) => {
+  if (document.querySelector("[data-comment-layer][data-active]")) return;
+  const target = event.composedPath()[0];
+  if (target.isContentEditable || target.closest?.("input, textarea, select")) return;
+  // …your shortcut
+});
+```

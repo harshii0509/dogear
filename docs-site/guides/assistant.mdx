@@ -1,0 +1,38 @@
+---
+title: "An AI assistant"
+description: "An AI teammate that answers in the thread, with your model and your docs. Its replies are labelled as AI."
+keywords: ["assistant", "ai", "answer", "llm", "scout"]
+---
+
+An assistant answers in the thread, as itself. Its replies carry an **AI** tag, a sparkle avatar and "Answered by AI". It's in the @ list, and while it works the thread says "Scout is reading…".
+
+```ts
+createDogear({
+  store,
+  auth,
+  defer: after, // it runs after the response; on Vercel, give the route time (maxDuration)
+  assistant: {
+    name: "Scout",
+    aliases: ["claude"],      // other @handles that call it
+    answers: "threads",       // every new thread and any @scout; "mentions": only @scout
+    maxReplies: 5,            // per thread
+    answer: async (thread, { link }) => askYourModel(thread), // the text, or null to stay quiet
+  },
+  // Its words are nobody's, so anyone may clear them:
+  deletable: (user, comment) => comment.author.id === user.id || Boolean(user.admin || comment.author.agent),
+});
+```
+
+`answer` is where your model, knowledge base and tools go. Dogear only decides when to ask, and saves what it says, cut to 2000 characters. Return `null` to stay quiet.
+
+| Option | What it does |
+| --- | --- |
+| `name` | What the assistant is called, and its @handle |
+| `aliases` | Other @handles that call it |
+| `answers` | `"threads"` answers every new thread and any @mention of it. `"mentions"` answers only when it's mentioned |
+| `maxReplies` | How many times it answers in one thread |
+| `answer(thread, { link })` | Your function. Returns the reply's text, or `null` |
+
+<Tip>
+  Give the widget the same `deletable` as the route, so the delete button shows for the same people.
+</Tip>
