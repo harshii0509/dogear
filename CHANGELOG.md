@@ -11,6 +11,22 @@
 - **`pulseOf(comments)`** in the main entry: the same figures, for your own dashboard or server.
 - **`dogear_pulse`** in `dogear mcp`, so a coding agent can answer "how's feedback going?"
 
+### Fixed
+- **Scrolling while writing no longer closes the sheet.** On a phone, a finger landing outside an
+  open card closed it at once, so starting to scroll threw away a half-written comment. Now only a
+  tap outside closes it.
+- **Closing a card keeps what you wrote.** A new comment's text comes back in the next new comment,
+  and a reply's when you open that thread again, until it's sent or the page reloads. This covers a
+  click outside and Esc on a desktop too.
+- **Writing with the Android keyboard up.** With `interactive-widget=resizes-content` the keyboard
+  wasn't noticed at all. A tap in the field couldn't move the caret, the pill stayed under the sheet,
+  and the sheet stopped 48px short of the keys. On sites without that setting, a pin drifted off its
+  point while the keyboard panned the page. Tested in Chrome on an Android 15 emulator.
+- **The @ list on a phone.** With the keyboard up it could push Post or Reply out of the sheet. The
+  list now gives way and scrolls, and its rows are 40px tall on a touch screen.
+- **Send on an iPhone's keyboard.** When the keyboard's Shift was lit, as it is at the start of a
+  sentence, Send added a line instead of posting or picking the person in the @ list.
+
 ## 0.6.1 — 2026-11-03
 
 ### Fixed

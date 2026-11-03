@@ -31,7 +31,28 @@ export function viewportPan({ offsetTop, scale }: ViewportReading): number {
   return scale > 1.01 ? 0 : Math.round(offsetTop);
 }
 
+/**
+ * How far a pin must move to stay on its point while the screen is panned. iOS moves `scrollY` with
+ * the pan, and rects are read from the screen, so it needs the whole pan added back. Chrome pans
+ * without moving `scrollY`, and its rects and fixed things share the layout viewport: nothing to add.
+ */
+export function pinShift(pan: number, pageTop: number, scrollY: number): number {
+  return Math.abs(pageTop - scrollY) < 1 ? pan : 0;
+}
+
 /** Whether a real keyboard is up, rather than a toolbar or the accessory bar of a hardware one. */
-export function keyboardIsUp(innerHeight: number, height: number): boolean {
-  return innerHeight - height > 100;
+export function keyboardIsUp(fullHeight: number, height: number): boolean {
+  return fullHeight - height > 100;
+}
+
+/**
+ * The height to measure a keyboard against: the tallest the layout viewport has been at this width.
+ * With `interactive-widget=resizes-content`, Android shrinks the layout viewport along with the
+ * visual one, so `innerHeight` alone never shows a keyboard. By width, so turning the phone doesn't
+ * measure one side against the other.
+ */
+export function fullHeight(tallest: Map<number, number>, width: number, innerHeight: number): number {
+  const full = Math.max(tallest.get(width) ?? 0, innerHeight);
+  tallest.set(width, full);
+  return full;
 }

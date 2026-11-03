@@ -63,7 +63,7 @@ import { toMarkdown } from "./markdown";
 import { pulseOf, type Pulse } from "./pulse";
 import { captureSnapshot, restoreSnapshot } from "./snapshot";
 import { STYLES } from "./styles";
-import { keyboardInset, keyboardIsUp, viewportPan } from "./viewport";
+import { fullHeight, keyboardInset, keyboardIsUp, pinShift, viewportPan } from "./viewport";
 
 /**
  * Figma-style comments on whatever page is open: press the button, then click to drop a pin or
@@ -244,7 +244,7 @@ const coarse = () =>
 const SHEET = {
   left: "calc(8px + env(safe-area-inset-left, 0px))",
   right: "calc(8px + env(safe-area-inset-right, 0px))",
-  bottom: "max(calc(56px + env(safe-area-inset-bottom, 0px)), calc(var(--_kb, 0px) + 8px))",
+  bottom: "max(calc(var(--_sheet-foot, 56px) + env(safe-area-inset-bottom, 0px)), calc(var(--_kb, 0px) + 8px))",
   width: "auto",
   origin: "bottom center",
 } as const;
@@ -269,26 +269,64 @@ function useKeyboardInset(on: boolean) {
         offsetTop: vv.offsetTop,
         scale: vv.scale,
       };
+      const pan = viewportPan(reading);
       const next = {
         inset: keyboardInset(reading),
-        pan: viewportPan(reading),
-        up: keyboardIsUp(reading.innerHeight, reading.height),
+        pan,
+        pinShift: pinShift(pan, vv.pageTop, window.scrollY),
+        up: keyboardShowing(vv),
       };
       setState((now) =>
-        now.inset === next.inset && now.pan === next.pan && now.up === next.up ? now : next,
+        now.inset === next.inset && now.pan === next.pan && now.pinShift === next.pinShift && now.up === next.up
+          ? now
+          : next,
       );
     };
     read();
     vv.addEventListener("resize", read);
     vv.addEventListener("scroll", read);
+    // Android can shrink both viewports back when the keyboard goes and tell only the window. On a
+    // busy phone it was seen to tell nobody, which left the sheet wrong until the next event.
+    window.addEventListener("resize", read);
+    const check = coarse() ? window.setInterval(read, 500) : undefined;
     return () => {
       vv.removeEventListener("resize", read);
       vv.removeEventListener("scroll", read);
+      window.removeEventListener("resize", read);
+      window.clearInterval(check);
     };
   }, [on]);
   return state;
 }
-const NO_KEYBOARD = { inset: 0, pan: 0, up: false };
+/**
+ * Shift+Enter, from a real keyboard. On a touch screen iOS reports `shiftKey` whenever the keyboard's
+ * own Shift is lit, as it is at the start of a sentence, so its Send key would only add a line.
+ */
+const wantsNewLine = (event: { shiftKey: boolean }) => event.shiftKey && !coarse();
+const NO_KEYBOARD = { inset: 0, pan: 0, pinShift: 0, up: false };
+const tallestLayouts = new Map<number, number>();
+/** A finger's device only: a desktop window made shorter shrinks the layout too, with no keyboard. */
+const keyboardShowing = (vv: VisualViewport) =>
+  keyboardIsUp(
+    coarse() ? fullHeight(tallestLayouts, window.innerWidth, window.innerHeight) : window.innerHeight,
+    vv.height,
+  );
+/**
+ * A press outside an open card closes it: a mouse's at once, a finger's only if it lifts where it
+ * landed. A finger that moves is scrolling the page, and the browser cancels it.
+ */
+function closeOnPress(press: PointerEvent, close: () => void) {
+  if (press.pointerType !== "touch") return close();
+  const finish = (event: PointerEvent) => {
+    if (event.pointerId !== press.pointerId) return;
+    removeEventListener("pointerup", finish, true);
+    removeEventListener("pointercancel", finish, true);
+    const moved = Math.hypot(event.clientX - press.clientX, event.clientY - press.clientY);
+    if (event.type === "pointerup" && moved <= TAP_SLOP) close();
+  };
+  addEventListener("pointerup", finish, true);
+  addEventListener("pointercancel", finish, true);
+}
 /**
  * For a field on a phone's sheet: a tap that would bring up the keyboard focuses it without iOS also
  * panning the page to it, which throws the pin out of view and stays that way after the keyboard
@@ -297,23 +335,25 @@ const NO_KEYBOARD = { inset: 0, pan: 0, up: false };
  */
 let fieldTouch: { x: number; y: number } | null = null;
 const steadyFocus = {
-  onTouchStart(event: ReactTouchEvent<HTMLElement>) {
+  onTouchStart(event: ReactTouchEvent<HTMLTextAreaElement | HTMLInputElement>) {
     const { clientX: x, clientY: y } = event.touches[0];
     fieldTouch = { x, y };
   },
-  onTouchEnd(event: ReactTouchEvent<HTMLElement>) {
+  onTouchEnd(event: ReactTouchEvent<HTMLTextAreaElement | HTMLInputElement>) {
     const field = event.currentTarget;
     const from = fieldTouch;
     fieldTouch = null;
     const focused = (field.getRootNode() as ShadowRoot).activeElement === field;
     const vv = window.visualViewport;
-    if (!from || (focused && vv && keyboardIsUp(window.innerHeight, vv.height))) return;
+    if (!from || (focused && vv && keyboardShowing(vv))) return;
     const { clientX: x, clientY: y } = event.changedTouches[0];
     if (Math.hypot(x - from.x, y - from.y) > 10) return;
     event.preventDefault();
     // Focused with no keyboard (a tray reopened by a reload, with no tap to allow one): start over.
     if (focused) field.blur();
     field.focus({ preventScroll: true });
+    // The tap that would have placed the caret was cancelled: after any text it opened with.
+    if (!focused) field.setSelectionRange(field.value.length, field.value.length);
   },
 };
 const GAP = 16;
@@ -1126,7 +1166,7 @@ function Layer({
     if (!tray || capturing || !openId) return;
     const onDown = (event: PointerEvent) => {
       if ((event.target as Element | null)?.closest?.(`[${LAYER_ATTR}]`)) return;
-      setOpenId(null);
+      closeOnPress(event, () => setOpenId(null));
     };
     document.addEventListener("pointerdown", onDown, true);
     return () => document.removeEventListener("pointerdown", onDown, true);
@@ -1340,8 +1380,10 @@ function Layer({
     if (event.button !== 0) return;
     if (draft || openId) {
       // A press outside an open card closes it rather than starting another.
-      setDraft(null);
-      setOpenId(null);
+      closeOnPress(event.nativeEvent, () => {
+        setDraft(null);
+        setOpenId(null);
+      });
       return;
     }
     if (isIgnoredAt(event.clientX, event.clientY, ignore)) return;
@@ -1379,6 +1421,13 @@ function Layer({
     setDraft({ box, anchor: anchorAt(box, ignore) });
     setDrag(null);
   }
+
+  /** What's written and not sent, so closing a card doesn't lose it: "new", or a thread's id. */
+  const unsent = useRef(new Map<string, string>());
+  const keepUnsent = (key: string) => (text: string) => {
+    if (text) unsent.current.set(key, text);
+    else unsent.current.delete(key);
+  };
 
   const rootRef = useRef<HTMLDivElement>(null);
   /** The keyboard's height while the panel or a card is up, for what rides above it on a phone. */
@@ -1547,7 +1596,11 @@ function Layer({
       data-typing={keyboardUp && (draft || openId) ? "" : undefined}
       style={
         keyboard.inset || keyboard.pan
-          ? ({ "--_kb": `${keyboard.inset}px`, "--_pan": `${keyboard.pan}px` } as CSSProperties)
+          ? ({
+              "--_kb": `${keyboard.inset}px`,
+              "--_pan": `${keyboard.pan}px`,
+              "--_pin-shift": `${keyboard.pinShift}px`,
+            } as CSSProperties)
           : undefined
       }
     >
@@ -1646,7 +1699,8 @@ function Layer({
               leaving={draft.sent}
               box={draftAt}
               placeholder="Add a comment"
-              initial={draft.body}
+              initial={draft.body ?? unsent.current.get("new")}
+              onChange={keepUnsent("new")}
               onSubmit={async (body) => {
                 const placed = draft;
                 // The form under the comment, if one is on screen, so others see what you saw.
@@ -1719,6 +1773,8 @@ function Layer({
             )
           }
           restore={restore?.parentId === openRoot.id ? restore : undefined}
+          unsentReply={unsent.current.get(openRoot.id)}
+          onReplyChange={keepUnsent(openRoot.id)}
           onReply={async (body) => {
             const root = openRoot;
             return Boolean(
@@ -2229,7 +2285,7 @@ function Pin({
   const style: CSSProperties = {
     left: x,
     // Fixed things stay put as iOS pans under the keyboard; the point this marks moves with the page.
-    top: `calc(${y - PIN}px + var(--_pan, 0px))`,
+    top: `calc(${y - PIN}px + var(--_pin-shift, 0px))`,
     opacity: muted ? 0.5 : 1,
     ...(entryDelay === null ? {} : { animationDelay: `${entryDelay}ms` }),
   };
@@ -3217,6 +3273,7 @@ function ComposeBox({
   };
   const fieldRef = useRef<HTMLTextAreaElement>(null);
   const mention = useMentionPicker(body, fieldRef, setBody);
+  const listOpen = mention.matches.length > 0;
   // Focus on mount, with the caret after any text an edit opens with.
   useEffect(() => {
     const field = fieldRef.current;
@@ -3231,7 +3288,9 @@ function ComposeBox({
     if (!field) return;
     field.style.height = "auto";
     field.style.height = `${Math.min(field.scrollHeight, FIELD_LINE * FIELD_MAX_ROWS)}px`;
-  }, [body]);
+    // The @ list can shrink the field on a short screen: the end of the text, and the caret, stay in it.
+    if (listOpen && field.selectionStart === field.value.length) field.scrollTop = field.scrollHeight;
+  }, [body, listOpen]);
   return (
     <div className="pc-compose pc-col" data-flat={flat ? "" : undefined}>
       <div className="pc-compose-row pc-row">
@@ -3254,7 +3313,7 @@ function ComposeBox({
           onSelect={mention.track}
           onKeyDown={(event) => {
             if (mention.key(event)) return;
-            if (event.key === "Enter" && !event.shiftKey) {
+            if (event.key === "Enter" && !wantsNewLine(event)) {
               event.preventDefault();
               void send();
             }
@@ -3332,7 +3391,7 @@ function useMentionPicker(
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       const by = event.key === "ArrowDown" ? 1 : -1;
       setActive((at + by + matches.length) % matches.length);
-    } else if ((event.key === "Enter" && !event.shiftKey) || event.key === "Tab") {
+    } else if ((event.key === "Enter" && !wantsNewLine(event)) || event.key === "Tab") {
       choose(matches[at]);
     } else if (event.key === "Escape") {
       // Closes the list only: the layer's Esc (on `document`) would close the card too.
@@ -3403,6 +3462,7 @@ function Composer({
   submitLabel,
   leaving = false,
   onSubmit,
+  onChange,
   initial,
   children,
 }: {
@@ -3414,6 +3474,7 @@ function Composer({
   /** Posted: folding into its pin, toward the corner nearest it. */
   leaving?: boolean;
   onSubmit?: (body: string) => Promise<unknown>;
+  onChange?: (body: string) => void;
   /** In place of the compose box, e.g. the name step. */
   children?: ReactNode;
 }) {
@@ -3427,7 +3488,13 @@ function Composer({
       onPointerDown={(event) => event.stopPropagation()}
     >
       {children ?? (
-        <ComposeBox placeholder={placeholder!} submitLabel={submitLabel} initial={initial} onSubmit={onSubmit!} />
+        <ComposeBox
+          placeholder={placeholder!}
+          submitLabel={submitLabel}
+          initial={initial}
+          onSubmit={onSubmit!}
+          onChange={onChange}
+        />
       )}
     </div>
   );
@@ -4799,6 +4866,8 @@ function Thread({
   onReply,
   onCopy,
   restore,
+  unsentReply,
+  onReplyChange,
   assistant,
 }: {
   root: Comment;
@@ -4822,6 +4891,9 @@ function Thread({
   onCopy: () => void;
   /** A reply that was turned away, back in the reply box. */
   restore?: Restore;
+  /** A reply written and not sent, from when this thread was last open. */
+  unsentReply?: string;
+  onReplyChange: (body: string) => void;
   /** The site's assistant, from the @ list: it says when it's reading. */
   assistant?: Person;
 }) {
@@ -5004,7 +5076,8 @@ function Thread({
               placeholder="Reply"
               submitLabel="Reply"
               lead={<Avatar author={me} />}
-              initial={restore?.body}
+              initial={restore?.body ?? unsentReply}
+              onChange={onReplyChange}
               onSubmit={onReply}
             />
           ) : (
