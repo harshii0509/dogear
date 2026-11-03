@@ -713,16 +713,37 @@ button.pc-pin:active { transform: scale(0.95); }
 .pc-dock-cancel { color: var(--_faint); }
 /* A card as a phone's sheet (cardPosition): the pin stays in sight above it, and the keyboard
    (--_kb) takes its share of the screen. */
-.pc-thread[data-sheet] {
-  max-height: calc(min(60vh, 100vh - var(--_kb, 0px) - 120px));
-  max-height: calc(min(60dvh, 100dvh - var(--_kb, 0px) - 120px));
+.pc-card[data-sheet] {
+  max-height: calc(min(60vh, 100vh - var(--_kb, 0px) - var(--_pan, 0px) - 120px));
+  max-height: calc(min(60dvh, 100dvh - var(--_kb, 0px) - var(--_pan, 0px) - 120px));
+}
+/* A thread's comments scroll inside it; the composer, with six lines and the @ list, scrolls whole. */
+.pc-card[data-sheet] > .pc-compose { max-height: inherit; overflow-y: auto; overscroll-behavior: contain; }
+/* On a short screen six lines won't fit beside the keyboard: the field gives way and scrolls, so the
+   caret and the send button stay in sight. */
+.pc-card[data-sheet] .pc-field {
+  max-height: max(20px, calc(100dvh - var(--_kb, 0px) - var(--_pan, 0px) - 190px));
+}
+/* A thread also has its head and at least a line of its comments to fit in. */
+.pc-thread[data-sheet] .pc-field {
+  max-height: max(20px, calc(100dvh - var(--_kb, 0px) - var(--_pan, 0px) - 260px));
 }
 @media (max-width: 480px) {
   .pc-dock[data-layout="tray"] {
     left: calc(8px + env(safe-area-inset-left, 0px)); right: calc(8px + env(safe-area-inset-right, 0px));
     bottom: calc(8px + env(safe-area-inset-bottom, 0px));
   }
-  .pc-dock-body { max-height: calc(70vh - 40px); max-height: calc(70dvh - 40px); }
+  /* Writing in a sheet: the pill would only show in slices around the keyboard's bar. */
+  .pc-root[data-typing] .pc-dock { visibility: hidden; }
+  /* Asking for a name, the panel's field is the one under the keyboard, so it rides above it. Only
+     then: with a sheet up, the pill stays where the sheet can cover it. */
+  .pc-dock[data-layout="tray"]:has(.pc-dock-box[data-state="join"]) {
+    bottom: max(calc(8px + env(safe-area-inset-bottom, 0px)), calc(var(--_kb, 0px) + 8px));
+  }
+  .pc-dock-body {
+    max-height: calc(70vh - 40px);
+    max-height: calc(min(70dvh, 100dvh - var(--_kb, 0px) - var(--_pan, 0px) - 64px) - 40px);
+  }
   /* The open thread's card needs the room: the list folds away, and the footer stays. */
   .pc-dock-box[data-thread] .pc-dock-body { display: none; }
   /* A guest who came by a link, before giving a name: the thread asks for it itself, so the name
