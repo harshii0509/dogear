@@ -5,39 +5,24 @@
 [![CI](https://github.com/harshii0509/dogear/actions/workflows/ci.yml/badge.svg)](https://github.com/harshii0509/dogear/actions/workflows/ci.yml)
 
 Figma-style comments on any web page. Click to drop a pin or drag to mark an area, then write.
-People reply in threads, edit and resolve, and see each other's comments arrive. It works in plain
-HTML, React and Next.js.
-
-I built it for design reviews on staging sites. It also works for visitor feedback on a live
-site. Your coding agent can read every thread over MCP and answer it. It's open source under
-the MIT licence and runs on your own backend. The website is [dogear.harshux.com](https://dogear.harshux.com).
+People reply in threads, edit and resolve, and see each other's comments arrive.
 
 <p align="center">
   <img src="media/demo.gif" width="960" alt="A pricing page with Dogear: pressing C, clicking the Start free trial button to pin a comment and posting it, then opening another person's thread, replying, and reacting with a party emoji.">
 </p>
 
-**Use Dogear's own server, or bring your own backend.** `@harshi04/dogear/server` is the whole
-backend as one route handler over Postgres, a JSON file or memory. Or give Dogear an adapter of
-five functions over Supabase, Firebase or your own API. With no backend at all, comments stay in
-the browser.
+I built Dogear for design reviews on staging sites. It also works for visitor feedback on a live
+site, and your coding agent can read every thread and answer it. It's MIT licensed and runs on
+your own backend, with no hosted service and no account to create. The website is
+[dogear.harshux.com](https://dogear.harshux.com).
 
-The docs are at [dogear.harshux.com/docs](https://dogear.harshux.com/docs).
+## Try it
 
-## Install
+In React or Next.js, install the package and render `<Comments>` once:
 
 ```bash
 npm install @harshi04/dogear     # or pnpm / yarn / bun
 ```
-
-For plain HTML, load it from a CDN, or download `element.global.js` from a
-[release](https://github.com/harshii0509/dogear/releases) and serve it from your own site:
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/@harshi04/dogear@0.6/dist/element.global.js"></script>
-<dogear-comments shortcut="c"></dogear-comments>
-```
-
-## Quick start
 
 ```tsx
 // app/dogear-comments.tsx (Next.js App Router; in plain React, render <Comments> directly)
@@ -47,9 +32,52 @@ export const DogearComments = () => <Comments shortcut="c" />;
 // then render <DogearComments /> once in app/layout.tsx
 ```
 
-With no adapter, comments are stored in this browser's localStorage, which is enough to try it out.
-Press C, click anything on the page, and write. To share comments between people,
-[pick a backend](https://dogear.harshux.com/docs/backends/overview).
+In plain HTML, load it from a CDN, or download `element.global.js` from a
+[release](https://github.com/harshii0509/dogear/releases) and serve it from your own site:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@harshi04/dogear@0.6/dist/element.global.js"></script>
+<dogear-comments shortcut="c"></dogear-comments>
+```
+
+Press C, click anything on the page, and write. With no backend, comments are saved in this
+browser's localStorage, so only you can see them. That's enough to try it out.
+
+If you'd rather not wire it up by hand, paste the
+[setup prompt](https://dogear.harshux.com/docs/agent-setup) into Claude Code, Cursor or Codex. It
+looks at your project, asks four questions, then sets up comments and a backend to match.
+
+## Where comments live
+
+Dogear talks to an adapter, a small object that reads and writes comments. Use the one that matches
+what you already run.
+
+| You have | Use |
+|---|---|
+| Nothing yet | Nothing. `localAdapter()` is the default, and comments stay in this browser |
+| A project on your own machine | `npx dogear serve`, a local server that keeps comments in a JSON file |
+| A Node server such as Next.js or Hono | [`createDogear`](https://dogear.harshux.com/docs/backends/server) from `@harshi04/dogear/server`, one route handler over Postgres, a JSON file or memory |
+| Supabase | [A ready adapter](https://dogear.harshux.com/docs/backends/supabase) with Row Level Security and Realtime |
+| Firebase or your own API | [Your own adapter](https://dogear.harshux.com/docs/backends/contract), five functions |
+
+[Pick a backend](https://dogear.harshux.com/docs/backends/overview) has the whole thing in two
+files for Next.js and Postgres.
+
+## Coding agents
+
+`dogear mcp` is a [Model Context Protocol](https://modelcontextprotocol.io) server. An agent
+connected to it sees which page a thread is on, which element it's pinned to, what people said, and
+where that element probably lives in your code. It's read-only until you pass `--write`, which lets
+the agent reply and resolve. Its replies show in the thread on the page with an Agent badge.
+
+```bash
+npx dogear serve
+claude mcp add dogear -- npx dogear mcp --write --site http://localhost:3000
+```
+
+An agent can't read comments in localStorage, so point your page at the address `dogear serve`
+prints. The [MCP guide](https://dogear.harshux.com/docs/agents/mcp) covers other agents and using a
+deployed backend.
 
 ## Docs
 
@@ -117,9 +145,10 @@ addEventListener("keydown", (event) => {
 ## Working on Dogear
 
 I build Dogear on my own, in public. Issues and pull requests are welcome, and
-[CONTRIBUTING.md](CONTRIBUTING.md) says how to pick one up. Coding agents should start with [AGENTS.md](AGENTS.md).
+[CONTRIBUTING.md](CONTRIBUTING.md) has how to pick one up and the ground rules. Coding agents should
+start with [AGENTS.md](AGENTS.md).
 
-**Commands** (Node 20, as in CI):
+**Commands.** Node 20, as in CI.
 
 ```bash
 npm ci               # install
@@ -149,14 +178,6 @@ npm run pulse        # how Dogear is doing (npm installs, stars, traffic, issues
 | `docs-site/` | the docs site at [dogear.harshux.com/docs](https://dogear.harshux.com/docs), in Mintlify MDX. `docs.json` holds the navigation, and `cd docs-site && npx mint dev` previews it. Merging to `main` publishes it. Not in the npm package |
 | `media/` | the clip in this README and the diagrams in the docs. `node media/diagrams.mjs` redraws the diagrams. Not in the npm package |
 | `scripts/pulse.mjs` | `npm run pulse`, for maintainers. It reads npm's download counts and the repo's GitHub figures through `gh`. Traffic needs push access. It keeps a local history in `.pulse/` (gitignored) to show what changed. Not in the npm package |
-
-**Ground rules.**
-
-- Keep each PR to one change, with a test, and run `npm run typecheck && npm test` before you open it.
-- Add a line to [CHANGELOG.md](CHANGELOG.md), under Unreleased, for anything a user would notice.
-- A change to what the server accepts or returns changes [docs/contract.md](docs/contract.md), `docs-site/backends/contract.mdx` and `test/server.test.ts` with it.
-- The main entry (`src/index.ts`) stays free of the DOM, and the browser code never imports `src/server/`.
-- Example people in docs, tests and demos are made up. They're Alex Doe, Sam, Jordan Lee, Riley and Casey, the assistant is Scout, and the demo product is Fernhill.
 
 What's planned is in [ROADMAP.md](ROADMAP.md).
 
