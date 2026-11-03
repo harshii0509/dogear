@@ -10,6 +10,20 @@
   sent anywhere new. `pulse={false}` (`no-pulse`) turns it off.
 - **`pulseOf(comments)`** in the main entry: the same figures, for your own dashboard or server.
 - **`dogear_pulse`** in `dogear mcp`, so a coding agent can answer "how's feedback going?"
+## 0.6.1 — 2026-11-03
+
+### Fixed
+- **Writing a comment with the iPhone keyboard up.** Tested in Safari on iOS with the real keyboard.
+  - The name step sat behind the keyboard, with its field and Continue out of sight. It now rides above it.
+  - Placing a pin could bring the keyboard up and send it straight away again: iOS clicks where the
+    finger was a moment after the tap, which took focus from the composer.
+  - A field taking focus no longer pans the page, which threw the pin out of view and left the page
+    scrolled after the keyboard went. Tapping a field gets the same treatment.
+  - Pins stay on their point while iOS pans under the keyboard.
+  - The pin is brought into view again when the keyboard takes the room above the sheet.
+  - The composer is capped to the room above the keyboard, and scrolls past that.
+  - A pinch no longer reads as a keyboard.
+  - The pill hides while you write in a sheet, rather than show in slices around the keyboard's bar.
 
 ## 0.6.0 — 2026-10-20
 

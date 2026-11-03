@@ -10,6 +10,7 @@ import {
   useState,
   type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
+  type TouchEvent as ReactTouchEvent,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
@@ -62,6 +63,7 @@ import { toMarkdown } from "./markdown";
 import { pulseOf, type Pulse } from "./pulse";
 import { captureSnapshot, restoreSnapshot } from "./snapshot";
 import { STYLES } from "./styles";
+import { keyboardInset, keyboardIsUp, viewportPan } from "./viewport";
 
 /**
  * Figma-style comments on whatever page is open: press the button, then click to drop a pin or
@@ -253,15 +255,29 @@ const SHEET = {
  * sheet pinned to its bottom would sit behind the keys.
  */
 function useKeyboardInset(on: boolean) {
-  const [inset, setInset] = useState(0);
+  const [state, setState] = useState(NO_KEYBOARD);
   useEffect(() => {
     const vv = window.visualViewport;
     if (!on || !vv) {
-      setInset(0);
+      setState(NO_KEYBOARD);
       return;
     }
-    const read = () =>
-      setInset(Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)));
+    const read = () => {
+      const reading = {
+        innerHeight: window.innerHeight,
+        height: vv.height,
+        offsetTop: vv.offsetTop,
+        scale: vv.scale,
+      };
+      const next = {
+        inset: keyboardInset(reading),
+        pan: viewportPan(reading),
+        up: keyboardIsUp(reading.innerHeight, reading.height),
+      };
+      setState((now) =>
+        now.inset === next.inset && now.pan === next.pan && now.up === next.up ? now : next,
+      );
+    };
     read();
     vv.addEventListener("resize", read);
     vv.addEventListener("scroll", read);
@@ -270,8 +286,36 @@ function useKeyboardInset(on: boolean) {
       vv.removeEventListener("scroll", read);
     };
   }, [on]);
-  return inset;
+  return state;
 }
+const NO_KEYBOARD = { inset: 0, pan: 0, up: false };
+/**
+ * For a field on a phone's sheet: a tap that would bring up the keyboard focuses it without iOS also
+ * panning the page to it, which throws the pin out of view and stays that way after the keyboard
+ * goes. The sheet rises by itself. A swipe that starts on the field, and any tap while the keyboard is
+ * up, are the browser's as usual.
+ */
+let fieldTouch: { x: number; y: number } | null = null;
+const steadyFocus = {
+  onTouchStart(event: ReactTouchEvent<HTMLElement>) {
+    const { clientX: x, clientY: y } = event.touches[0];
+    fieldTouch = { x, y };
+  },
+  onTouchEnd(event: ReactTouchEvent<HTMLElement>) {
+    const field = event.currentTarget;
+    const from = fieldTouch;
+    fieldTouch = null;
+    const focused = (field.getRootNode() as ShadowRoot).activeElement === field;
+    const vv = window.visualViewport;
+    if (!from || (focused && vv && keyboardIsUp(window.innerHeight, vv.height))) return;
+    const { clientX: x, clientY: y } = event.changedTouches[0];
+    if (Math.hypot(x - from.x, y - from.y) > 10) return;
+    event.preventDefault();
+    // Focused with no keyboard (a tray reopened by a reload, with no tap to allow one): start over.
+    if (focused) field.blur();
+    field.focus({ preventScroll: true });
+  },
+};
 const GAP = 16;
 const FIELD_MAX_ROWS = 6;
 /** A field's line: 14px text at 20, as a command palette's input. */
@@ -1337,13 +1381,22 @@ function Layer({
   }
 
   const rootRef = useRef<HTMLDivElement>(null);
-  /** The keyboard's height while a card is up, for the sheet on a phone. */
-  const keyboard = useKeyboardInset(Boolean(draft || openId));
+  /** The keyboard's height while the panel or a card is up, for what rides above it on a phone. */
+  const keyboard = useKeyboardInset(Boolean(active || draft || openId));
+  const keyboardUp = keyboard.up;
+  /** The card the pin was last brought into view for, so the keyboard going down doesn't scroll. */
+  const sheetSeen = useRef<string | null>(null);
   /* On a phone the card is a sheet over the bottom of the page: once one opens, the page scrolls
-     so its pin sits in the room above it. Once per card, not again as comments arrive. */
+     so its pin sits in the room above it. Once per card, and again when the keyboard takes more of
+     the room, but not as comments arrive. */
   const sheetFor = draft && !draft.sent ? "draft" : openId;
   useEffect(() => {
-    if (!sheetFor || !narrow()) return;
+    if (!sheetFor || !narrow()) {
+      sheetSeen.current = null;
+      return;
+    }
+    if (sheetSeen.current === sheetFor && !keyboardUp) return;
+    sheetSeen.current = sheetFor;
     const raf = requestAnimationFrame(() => {
       const card = rootRef.current?.querySelector(".pc-card[data-sheet]")?.getBoundingClientRect();
       const anchor =
@@ -1356,7 +1409,7 @@ function Layer({
       window.scrollBy({ top: y - card.top * 0.45, behavior: reduce ? "auto" : "smooth" });
     });
     return () => cancelAnimationFrame(raf);
-  }, [sheetFor]);
+  }, [sheetFor, keyboardUp]);
 
   if (!available) return null;
 
@@ -1491,7 +1544,12 @@ function Layer({
       ref={rootRef}
       className="pc-root"
       data-theme={theme}
-      style={keyboard ? ({ "--_kb": `${keyboard}px` } as CSSProperties) : undefined}
+      data-typing={keyboardUp && (draft || openId) ? "" : undefined}
+      style={
+        keyboard.inset || keyboard.pan
+          ? ({ "--_kb": `${keyboard.inset}px`, "--_pan": `${keyboard.pan}px` } as CSSProperties)
+          : undefined
+      }
     >
       {capturing && (
         <div
@@ -1503,6 +1561,11 @@ function Layer({
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerCancel}
           onPointerLeave={() => setPoint(null)}
+          /* The pin is down by now and its composer has the keyboard coming. Left alone, iOS clicks
+             where the finger was a moment later, which takes focus and sends the keyboard away. */
+          onTouchEnd={(event) => {
+            if (event.cancelable) event.preventDefault();
+          }}
         />
       )}
 
@@ -2165,7 +2228,8 @@ function Pin({
 }) {
   const style: CSSProperties = {
     left: x,
-    top: y - PIN,
+    // Fixed things stay put as iOS pans under the keyboard; the point this marks moves with the page.
+    top: `calc(${y - PIN}px + var(--_pan, 0px))`,
     opacity: muted ? 0.5 : 1,
     ...(entryDelay === null ? {} : { animationDelay: `${entryDelay}ms` }),
   };
@@ -2913,6 +2977,7 @@ function EmojiPicker({
             <Glyph name="search" size={16} />
             <Frimousse.Search
               className="pc-field pc-fill"
+              {...steadyFocus}
               placeholder="Search emoji"
               aria-label="Search emoji"
               onChange={(event) => setQuery(event.currentTarget.value)}
@@ -3156,7 +3221,8 @@ function ComposeBox({
   useEffect(() => {
     const field = fieldRef.current;
     if (!field || !focus) return;
-    field.focus();
+    // The sheet rises above the keyboard itself: left alone, iOS also pans the page, pin and all.
+    field.focus({ preventScroll: true });
     field.setSelectionRange(field.value.length, field.value.length);
   }, []);
   // One 20px line until there is more, then up to six, then it scrolls.
@@ -3173,6 +3239,7 @@ function ComposeBox({
         <textarea
           ref={fieldRef}
           className="pc-field pc-fill"
+          {...steadyFocus}
           value={body}
           placeholder={placeholder}
           rows={1}
@@ -3244,7 +3311,7 @@ function useMentionPicker(
   useLayoutEffect(() => {
     const field = fieldRef.current;
     if (placeAt.current === null || !field) return;
-    field.focus();
+    field.focus({ preventScroll: true });
     field.setSelectionRange(placeAt.current, placeAt.current);
     placeAt.current = null;
   }, [body]);
@@ -3642,7 +3709,7 @@ function Dock({
     if (!joined) {
       // A small head-shake, and the name back to change.
       shake(avatarRef.current);
-      window.setTimeout(() => nameRef.current?.focus(), 0);
+      window.setTimeout(() => nameRef.current?.focus({ preventScroll: true }), 0);
     }
   };
   const { keyOf } = useContext(PendingContext);
@@ -3659,6 +3726,11 @@ function Dock({
       setOpening((n) => n + 1);
     }
   }
+  /* The name step's field, ready to type in. Not `autoFocus`, which lets iOS pan the page to it. In
+     the commit, so it's still inside the tap, or iOS won't bring up the keyboard. */
+  useLayoutEffect(() => {
+    if (open && shown && kind === "join") nameRef.current?.focus({ preventScroll: true });
+  }, [open, shown, kind, opening]);
   useEffect(() => {
     if (open || !shown) return;
     const timer = window.setTimeout(() => setShown(false), DOCK_UNMOUNT_MS);
@@ -3802,9 +3874,9 @@ function Dock({
             )}
             <input
               ref={nameRef}
-              autoFocus
               readOnly={joining}
               className="pc-field pc-join-name"
+              {...steadyFocus}
               value={name}
               maxLength={40}
               placeholder="Your name"
