@@ -10,6 +10,7 @@
   sent anywhere new. `pulse={false}` (`no-pulse`) turns it off.
 - **`pulseOf(comments)`** in the main entry: the same figures, for your own dashboard or server.
 - **`dogear_pulse`** in `dogear mcp`, so a coding agent can answer "how's feedback going?"
+
 ## 0.6.1 — 2026-11-03
 
 ### Fixed
