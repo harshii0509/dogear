@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- **Pulse: a graph you can read.** The 14 days are now the headline and a taller graph. Move across
+  it (pointer, finger or arrow keys) and the headline reads that day, with that day's people lit
+  below. The three figures sit in one line under the headline.
+- **Pulse: people have names.** Hover, focus or tap an avatar for their name, comment count and when
+  they were last active, and their line draws over everyone's. The row now covers the last 14 days,
+  not 7, and `+N` shows who it's hiding.
+- With no open threads at all, Pulse says "No open threads." rather than "Every open thread has a reply."
+
+### Added
+- **`dailyThreads` and `contributors`** on `pulseOf`: how many of each day's comments started a
+  thread, and who commented over the 14 days, with their share of each day.
+- **`--dogear-tooltip`**: what the Pulse's tooltip and the graph's dot ring sit on.
+
 ## 0.7.0 — 2026-11-04
 
 ### Added
