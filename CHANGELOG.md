@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.7.0 — 2026-11-04
 
 ### Added
 - **Pulse: how feedback is going, in the list.** The tray and the dock's panel have a Pulse switch:

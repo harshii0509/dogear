@@ -36,7 +36,7 @@ In plain HTML, load it from a CDN, or download `element.global.js` from a
 [release](https://github.com/harshii0509/dogear/releases) and serve it from your own site:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@harshi04/dogear@0.6/dist/element.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@harshi04/dogear@0.7/dist/element.global.js"></script>
 <dogear-comments shortcut="c"></dogear-comments>
 ```
 
@@ -123,7 +123,7 @@ takes every prop except `enabled` and `icons`, functions included.
 | `emojiData` | `emoji-data` | jsDelivr's `emojibase-data@17` | where the set's "···" picker loads every other emoji from, read as `${emojiData}/en/data.json`. Point it at your own copy of Emojibase's data to self-host |
 | `theme` | `theme` | `"dark"` | `"light"`, or `"auto"` to follow the visitor's system setting. Changing the attribute redraws at once. See [Theming](https://dogear.harshux.com/docs/guides/theming) |
 | `pick` | `pick` | `"element"` | `"pin"` makes the pin you'd drop, with your avatar, follow the pointer, and a click drops it. Nothing on the page is outlined or named, and there are no areas, for sites whose visitors comment rather than inspect |
-| `pulse` | `no-pulse` | `true` | `false` hides the Pulse switch in the tray and the dock's panel. Unreleased, coming in the next version |
+| `pulse` | `no-pulse` | `true` | `false` hides the Pulse switch in the tray and the dock's panel. |
 | `locations` | `no-locations` | `true` | `false` hides the page and "on heading …" under comments in the list and on an open one, leaving name, time and text. Pins still show where |
 | `avatars` | `avatars='{…}'`, or the element's `avatars` property | none | avatars for people without a photo, by key, such as `{ sky: "linear-gradient(…)" }`. Guests pick one with their name, and everyone else gets one by id |
 
