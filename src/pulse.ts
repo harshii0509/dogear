@@ -19,6 +19,8 @@ export type Pulse = {
   started: { thisWeek: number; lastWeek: number };
   /** Comments (threads and replies) per day, oldest day first: 14 days of 24 hours, ending now. */
   daily: number[];
+  /** Of each day's comments in `daily`, how many started a thread. The rest are replies. */
+  dailyThreads: number[];
   /**
    * How long a thread waits for its first reply from someone other than whoever started it:
    * the median over threads started in the last 30 days that have one, and how many that is.
@@ -34,6 +36,19 @@ export type Pulse = {
   spots: { path: string; label: string; threads: number }[];
   /** Whoever commented in the last 7 days, most comments first. */
   people: { user: User; comments: number }[];
+  /** Whoever commented in the 14 days of `daily`, most comments first, with their share of each day. */
+  contributors: Contributor[];
+};
+
+export type Contributor = {
+  user: User;
+  /** In the 14 days, and in the last 7 of them. */
+  comments: number;
+  thisWeek: number;
+  /** Per day, oldest first, on the same days as `Pulse.daily`. */
+  daily: number[];
+  /** Their latest comment, epoch milliseconds. */
+  lastAt: number;
 };
 
 type Options = {
@@ -78,6 +93,26 @@ export function pulseOf(comments: Comment[], { now = Date.now(), top = 3 }: Opti
     const end = now - (13 - i) * DAY;
     return comments.filter((c) => c.createdAt > end - DAY && c.createdAt <= end).length;
   });
+  /** Which of those 14 days a time falls in, or -1 outside them. */
+  const dayOf = (time: number) => {
+    const back = Math.floor((now - time) / DAY);
+    return back >= 0 && back < 14 ? 13 - back : -1;
+  };
+  const dailyThreads = daily.map(() => 0);
+  const contributors = new Map<string, Contributor>();
+  for (const c of comments) {
+    const day = dayOf(c.createdAt);
+    if (day < 0) continue;
+    if (c.parentId === null) dailyThreads[day] += 1;
+    const who =
+      contributors.get(c.author.id) ??
+      { user: c.author, comments: 0, thisWeek: 0, daily: daily.map(() => 0), lastAt: c.createdAt };
+    who.comments += 1;
+    if (day >= 7) who.thisWeek += 1;
+    who.daily[day] += 1;
+    who.lastAt = Math.max(who.lastAt, c.createdAt);
+    contributors.set(c.author.id, who);
+  }
 
   const waits = roots
     .filter((r) => r.createdAt > now - 30 * DAY)
@@ -117,6 +152,7 @@ export function pulseOf(comments: Comment[], { now = Date.now(), top = 3 }: Opti
     resolved: roots.length - open.length,
     started: { thisWeek: startedIn(0), lastWeek: startedIn(1) },
     daily,
+    dailyThreads,
     firstReply: { median: median(waits), threads: waits.length },
     waiting: unanswered.slice(0, top),
     waitingTotal: unanswered.length,
@@ -128,5 +164,6 @@ export function pulseOf(comments: Comment[], { now = Date.now(), top = 3 }: Opti
       .sort(byCount((s) => s.threads, (s) => `${s.path} ${s.label}`))
       .slice(0, 3),
     people: [...people.values()].sort(byCount((p) => p.comments, (p) => p.user.name)),
+    contributors: [...contributors.values()].sort(byCount((p) => p.comments, (p) => p.user.name)),
   };
 }

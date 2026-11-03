@@ -47,6 +47,8 @@ test("nothing yet is all zeros, not errors", () => {
   assert.deepEqual(pulse.pages, []);
   assert.deepEqual(pulse.spots, []);
   assert.deepEqual(pulse.people, []);
+  assert.deepEqual(pulse.dailyThreads, Array(14).fill(0));
+  assert.deepEqual(pulse.contributors, []);
 });
 
 test("open and resolved count threads, not replies, and this week against last", () => {
@@ -144,4 +146,38 @@ test("people are this week's commenters, most comments first", () => {
     pulse.people.map((p) => [p.user.name, p.comments]),
     [["Sam", 2], ["Alex Doe", 1]],
   );
+});
+
+test("dailyThreads is the part of each day that started a thread", () => {
+  const a = root(alex, 1 * HOUR);
+  const b = root(sam, 2.5 * DAY);
+  const pulse = pulseOf([a, b, reply(b, alex, HOUR), reply(b, riley, 2 * HOUR)], { now: NOW });
+  assert.equal(pulse.dailyThreads[13], 1);
+  assert.equal(pulse.dailyThreads[11], 1);
+  assert.equal(pulse.daily[11], 3);
+  assert.equal(pulse.dailyThreads.reduce((sum, day) => sum + day, 0), 2);
+});
+
+test("contributors cover the 14 days, each with their share of every day", () => {
+  const a = root(alex, 2 * HOUR);
+  const b = root(sam, 10 * DAY);
+  const comments = [a, reply(a, sam, HOUR), b, reply(b, alex, HOUR), root(alex, 9 * DAY), root(riley, 20 * DAY)];
+  const pulse = pulseOf(comments, { now: NOW });
+  assert.deepEqual(pulse.contributors.map((c) => c.user.name), ["Alex Doe", "Sam"]);
+  const [first, second] = pulse.contributors;
+  assert.equal(first.comments, 3);
+  assert.equal(first.thisWeek, 1);
+  assert.equal(first.lastAt, a.createdAt);
+  assert.equal(second.lastAt, a.createdAt + HOUR);
+  // Added up, everyone's days are `daily`, so the graph's people can't disagree with its line.
+  pulse.daily.forEach((count, day) => {
+    assert.equal(pulse.contributors.reduce((sum, c) => sum + c.daily[day], 0), count);
+  });
+});
+
+test("a day's edge falls where daily puts it: exactly 24 hours ago is yesterday", () => {
+  const pulse = pulseOf([root(alex, 1 * DAY), root(alex, 14 * DAY)], { now: NOW });
+  assert.equal(pulse.daily[12], 1);
+  assert.equal(pulse.contributors[0].daily[12], 1);
+  assert.equal(pulse.contributors[0].comments, 1);
 });

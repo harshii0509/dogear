@@ -29,6 +29,7 @@ const LIGHT = /* css */ `
   --_accent: var(--dogear-accent, oklch(0.2686 0 0));
   --_on-accent: var(--dogear-on-accent, oklch(0.9851 0 0));
   --_well: var(--dogear-well, oklch(0 0 0 / 0.04));
+  --_tip: var(--dogear-tooltip, oklch(1 0 0 / 0.96));
   --_highlight: var(--dogear-highlight, inset 0 0 0 1px oklch(1 0 0 / 0.5), inset 0 1px 0 oklch(1 0 0 / 0.9));
   --_row-highlight: var(--dogear-row-highlight, 0 0.5px 0.5px oklch(0 0 0 / 0.06), 0 1px 2px oklch(0 0 0 / 0.04),
     inset 0 0.5px 0 oklch(1 0 0 / 0.8));
@@ -65,6 +66,8 @@ export const STYLES = /* css */ `
   --_highlight: var(--dogear-highlight, inset 0 0 0 1px oklch(1 0 0 / 0.08), inset 0 0.5px 0.5px oklch(1 0 0 / 0.1),
     inset 0 1px 2px oklch(1 0 0 / 0.04));
   --_well: var(--dogear-well, oklch(0 0 0 / 0.12));
+  /* What the Pulse's tooltip sits on: nearly solid, since it sits over the panel's own glass. */
+  --_tip: var(--dogear-tooltip, oklch(0.23 0 0 / 0.94));
   --_row-active: var(--dogear-row-active, var(--_hover));
   --_row-highlight: var(--dogear-row-highlight, 0 0.5px 0.5px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04),
     inset 0 0.5px 0.5px oklch(1 0 0 / 0.1), inset 0 1px 2px oklch(1 0 0 / 0.04));
@@ -787,8 +790,9 @@ button.pc-pin:active { transform: scale(0.95); }
   .pc-mentions-filter:hover { background: var(--_hover); color: var(--_text); }
   .pc-mentions-filter[aria-pressed="true"]:hover { background: color-mix(in srgb, var(--_mention) 24%, transparent); color: var(--_mention); }
 }
-/* The Pulse switch, beside the mentions filter, and the Pulse it shows in place of the list: three
-   figures in wells, the last 14 days as a line, then the threads nobody has answered. */
+/* The Pulse switch, beside the mentions filter, and the Pulse it shows in place of the list: the
+   14 days as a headline and a graph you can scrub, the people behind them, then the threads nobody
+   has answered. */
 .pc-pulse-switch {
   flex-shrink: 0; justify-content: center; width: 28px; height: 24px; border-radius: 999px;
   color: var(--_muted); transition: background-color 150ms ease, color 150ms ease;
@@ -798,20 +802,86 @@ button.pc-pin:active { transform: scale(0.95); }
   .pc-pulse-switch:hover { background: var(--_hover); color: var(--_text); }
 }
 .pc-pulse { animation: pc-fade 150ms ease; }
-.pc-pulse-stats { align-items: stretch; gap: 4px; padding: 4px 4px 0; }
-.pc-pulse-stat {
-  flex: 1 1 0; min-width: 0; gap: 2px; padding: 10px; border-radius: var(--_row-radius); background: var(--_well);
+.pc-pulse-head { gap: 2px; padding: 6px 10px 0; }
+.pc-pulse-headline { align-items: baseline; gap: 6px; min-width: 0; }
+.pc-pulse-figure {
+  flex-shrink: 0; color: var(--_strong); font-size: 28px; line-height: 32px; font-weight: 600;
+  letter-spacing: -0.03em; font-variant-numeric: tabular-nums;
 }
-.pc-pulse-value {
-  color: var(--_strong); font-size: 20px; line-height: 24px; font-weight: 600; letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
+.pc-pulse-label-text { min-width: 0; color: var(--_text); }
+.pc-pulse-sub { display: block; min-height: 16px; }
+.pc-pulse-sub b { font-weight: 500; color: var(--_text); font-variant-numeric: tabular-nums; }
+/* Scrubbing sideways is the graph's; up and down still scroll the list. */
+.pc-pulse-graph {
+  position: relative; height: 96px; margin: 8px 10px 0; color: var(--_strong); border-radius: 4px;
+  touch-action: pan-y; cursor: crosshair; -webkit-user-select: none; user-select: none;
 }
-.pc-pulse-block { gap: 6px; padding: 12px 10px 4px; color: var(--_text); }
-.pc-pulse-spark { display: block; width: 100%; height: 28px; overflow: visible; }
+.pc-root .pc-pulse-graph:focus-visible { outline-offset: 6px; }
+.pc-pulse-graph svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.pc-pulse-line { color: var(--_text); }
+.pc-pulse-graph[data-person] .pc-pulse-line { color: var(--_faint); }
+.pc-pulse-crosshair {
+  position: absolute; top: 0; bottom: 0; width: 1px; margin-left: -0.5px; background: var(--_faint); pointer-events: none;
+}
+.pc-pulse-dot {
+  position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 999px;
+  background: var(--_strong); box-shadow: 0 0 0 2px var(--_tip); pointer-events: none;
+}
+.pc-pulse-peak, .pc-pulse-legend {
+  position: absolute; top: -2px; font-size: 11px; line-height: 14px; color: var(--_muted);
+  font-variant-numeric: tabular-nums; pointer-events: none;
+}
+.pc-pulse-legend { left: 0; display: flex; gap: 10px; max-width: 100%; }
+.pc-pulse-legend span { display: inline-flex; align-items: center; gap: 4px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc-pulse-legend i { flex-shrink: 0; width: 10px; height: 2px; border-radius: 1px; }
+.pc-pulse-axis { justify-content: space-between; padding: 4px 10px 0; }
 .pc-pulse-label { padding: 16px 10px 4px; }
 .pc-pulse-page { gap: 8px; padding: 6px 10px; color: var(--_text); }
 .pc-pulse-count { color: var(--_strong); font-weight: 500; font-variant-numeric: tabular-nums; }
 .pc-pulse-people { flex-wrap: wrap; gap: 4px; padding: 6px 10px 4px; }
+/* An avatar that can say who it is. The hit area grows to meet its neighbours', and never past them. */
+.pc-pulse-person { position: relative; display: block; flex-shrink: 0; border-radius: 999px; transition: opacity 100ms ease; }
+.pc-pulse-person::before { content: ""; position: absolute; inset: -2px; }
+.pc-pulse-person[data-dim] { opacity: 0.26; }
+.pc-pulse-person .pc-avatar { transition: box-shadow 120ms ease; }
+.pc-pulse-person[data-on] .pc-avatar { box-shadow: 0 0 0 1.5px var(--_strong); }
+.pc-pulse-more {
+  height: 24px; min-width: 24px; padding: 0 6px; background: var(--_hover); color: var(--_text);
+  font-size: 11px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums;
+}
+@media (hover: hover) and (pointer: fine) {
+  .pc-pulse-person:hover .pc-avatar { box-shadow: 0 0 0 1.5px var(--_strong); }
+  .pc-pulse-more:hover { color: var(--_strong); }
+}
+@media (pointer: coarse) {
+  .pc-pulse-people { gap: 12px; }
+  .pc-pulse-person .pc-avatar { width: 32px; height: 32px; font-size: 12px; }
+  .pc-pulse-person::before { inset: -6px; }
+  .pc-pulse-more { height: 32px; min-width: 32px; line-height: 32px; font-size: 12px; }
+}
+/* The outer box moves, gliding from one avatar to the next; the card inside fades. It stays visible
+   just long enough to fade out. */
+.pc-pulse-tip {
+  left: 0; top: 0; max-width: 240px; pointer-events: none; visibility: hidden; transition: visibility 0s linear 80ms;
+}
+.pc-pulse-tip[data-open] { visibility: visible; transition: none; }
+.pc-pulse-tip[data-open][data-glide] { transition: transform 120ms cubic-bezier(0.23, 1, 0.32, 1); }
+.pc-pulse-tip-card {
+  padding: 6px 10px; border-radius: 10px; background: var(--_tip); color: var(--_text);
+  box-shadow: 0 0 0 1px var(--_divider), 0 4px 16px oklch(0 0 0 / 0.28);
+  font-variant-numeric: tabular-nums; overflow-wrap: anywhere;
+  opacity: 0; transform: scale(0.97); transform-origin: var(--_tip-origin, bottom center);
+  transition: opacity 80ms ease-in, transform 80ms ease-in;
+}
+.pc-pulse-tip[data-open] .pc-pulse-tip-card {
+  opacity: 1; transform: none; transition: opacity 120ms ease-out, transform 120ms ease-out;
+}
+.pc-pulse-tip-title { gap: 6px; color: var(--_strong); font-weight: 500; }
+@media (prefers-reduced-motion: reduce) {
+  .pc-pulse-tip, .pc-pulse-tip[data-open][data-glide], .pc-pulse-tip-card, .pc-pulse-tip[data-open] .pc-pulse-tip-card,
+  .pc-pulse-person, .pc-pulse-person .pc-avatar { transition: none; }
+  .pc-pulse-tip-card { transform: none; }
+}
 .pc-switch { display: flex; align-items: center; gap: 8px; color: var(--_text); cursor: pointer; }
 .pc-switch input {
   appearance: none; width: 28px; height: 16px; border-radius: 999px; margin: 0; cursor: pointer;

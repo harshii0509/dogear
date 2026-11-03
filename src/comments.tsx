@@ -4,6 +4,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -12,6 +13,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type TouchEvent as ReactTouchEvent,
   type MouseEvent as ReactMouseEvent,
+  type FocusEvent as ReactFocusEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
   type RefObject,
@@ -60,7 +62,7 @@ import {
   type User,
 } from "./model";
 import { toMarkdown } from "./markdown";
-import { pulseOf, type Pulse } from "./pulse";
+import { pulseOf, type Contributor, type Pulse } from "./pulse";
 import { captureSnapshot, restoreSnapshot } from "./snapshot";
 import { STYLES } from "./styles";
 import { fullHeight, keyboardInset, keyboardIsUp, pinShift, viewportPan } from "./viewport";
@@ -4642,31 +4644,422 @@ function span(ms: number) {
   return hours < 48 ? `${hours}h` : `${Math.round(hours / 24)}d`;
 }
 
-/** Comments a day as one line: its shape, not its figures, so no axis and no dots. */
-function Spark({ days }: { days: number[] }) {
-  const top = Math.max(1, ...days);
-  const points = days
-    .map((count, i) => `${(i / (days.length - 1)) * 100},${22 - (count / top) * 20}`)
-    .join(" ");
-  return (
-    <svg className="pc-pulse-spark" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true">
-      <polyline
-        points={points}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-      />
-    </svg>
+/** "1 comment", "3 comments". */
+const counted = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+/** How many people the Pulse's row shows before a "+N". */
+const PULSE_PEOPLE = 8;
+/** A touch of a tooltip's wait, so it doesn't flicker as the pointer crosses. Then the next opens at once. */
+const TIP_WAIT = 200;
+const TIP_COOL = 300;
+
+/**
+ * `daily` is 14 rolling 24-hour windows ending now, not calendar days, so a day is named by how far
+ * back it is. A date could be off by one.
+ */
+const dayName = (day: number) => {
+  const back = 13 - day;
+  return back === 0 ? "Today" : back === 1 ? "Yesterday" : `${back} days ago`;
+};
+
+/** The graph's own scale: the room above the baseline, in the 96px it's drawn in. */
+const graphY = (count: number, top: number) => 92 - (count / top) * 80;
+const graphLine = (days: number[], top: number) =>
+  days.map((count, i) => `${(i / 13) * 100},${graphY(count, top)}`).join(" ");
+
+type PulseTipContent = { title: string; agent?: boolean; lines: string[] };
+type PulseTipState = PulseTipContent & {
+  el: HTMLElement;
+  /** Whose line to draw on the graph, when the tooltip is a person's. */
+  person?: string;
+  /** Moving from one avatar to the next, rather than opening. */
+  glide: boolean;
+};
+
+/**
+ * Drawn on the layer's root, not in the panel: the panel's backdrop-filter would trap
+ * position: fixed, and the list's scroll and mask would clip it.
+ */
+function PulseTip({ layer, tip }: { layer: Element | null; tip: PulseTipState | null }) {
+  const ref = useRef<HTMLDivElement>(null);
+  /** What it last said, so it can fade out still saying it. */
+  const said = useRef<PulseTipContent | null>(null);
+  if (tip) said.current = tip;
+  useLayoutEffect(() => {
+    const box = ref.current;
+    if (!box || !tip) return;
+    const spot = tip.el.getBoundingClientRect();
+    const left = Math.max(8, Math.min(spot.left + spot.width / 2 - box.offsetWidth / 2, window.innerWidth - box.offsetWidth - 8));
+    const above = spot.top - box.offsetHeight - 6;
+    const top = above < 8 ? spot.bottom + 6 : above;
+    box.style.setProperty("--_tip-origin", above < 8 ? "top center" : "bottom center");
+    box.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)`;
+  });
+  if (!layer) return null;
+  const content = said.current;
+  return createPortal(
+    <div
+      ref={ref}
+      className="pc-pulse-tip pc-fixed"
+      aria-hidden="true"
+      data-open={tip ? "" : undefined}
+      data-glide={tip?.glide ? "" : undefined}
+    >
+      {content && (
+        <div className="pc-pulse-tip-card pc-meta">
+          <div className="pc-pulse-tip-title pc-row">
+            <span>{content.title}</span>
+            {content.agent && <span className="pc-badge">AI</span>}
+          </div>
+          {content.lines.map((line) => (
+            <div key={line}>{line}</div>
+          ))}
+        </div>
+      )}
+    </div>,
+    layer,
   );
 }
 
 /**
- * How feedback is going, in place of the list: what's open, what's new, how long a thread waits
- * for someone to answer, the threads nobody has, and where the feedback gathers. Every figure is
- * from `pulseOf`, over the comments the list already has.
+ * The top of the Pulse: the graph drives it. At rest the headline is the 14 days. Scrub the graph
+ * (pointer, finger, or the arrow keys) and it reads that day, with that day's people lit below. Hover
+ * or tap a person and their line draws over everyone's, with their name in a tooltip.
+ */
+function PulseGraph({
+  pulse,
+  sitewide,
+}: {
+  pulse: Pulse;
+  sitewide: boolean;
+}) {
+  const { daily, dailyThreads, contributors } = pulse;
+  const [day, setDay] = useState<number | null>(null);
+  const [tip, setTip] = useState<PulseTipState | null>(null);
+  const [everyone, setEveryone] = useState(false);
+  /** Read out for the arrow keys only: a pointer would talk over itself. */
+  const [spoken, setSpoken] = useState("");
+  const [layer, setLayer] = useState<Element | null>(null);
+  const headRef = useRef<HTMLLIElement>(null);
+  const graphRef = useRef<HTMLDivElement>(null);
+  const fillId = `pc-pulse-fill-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
+  const timers = useRef<{ open?: number; cool?: number; leave?: number }>({});
+  const warm = useRef(false);
+  const pointer = useRef("mouse");
+
+  useLayoutEffect(() => setLayer(headRef.current?.closest(".pc-root") ?? null), []);
+
+  const hideTip = () => {
+    const t = timers.current;
+    window.clearTimeout(t.open);
+    window.clearTimeout(t.leave);
+    window.clearTimeout(t.cool);
+    setTip(null);
+    t.cool = window.setTimeout(() => {
+      warm.current = false;
+    }, TIP_COOL);
+  };
+  const showTip = (next: Omit<PulseTipState, "glide">, { wait = false, glide = true } = {}) => {
+    const t = timers.current;
+    window.clearTimeout(t.open);
+    window.clearTimeout(t.leave);
+    window.clearTimeout(t.cool);
+    if (wait && !warm.current) {
+      t.open = window.setTimeout(() => {
+        warm.current = true;
+        setTip({ ...next, glide: false });
+      }, TIP_WAIT);
+      return;
+    }
+    warm.current = true;
+    setTip((now) => ({ ...next, glide: glide && now !== null }));
+  };
+  /** Crossing the gap between two avatars shouldn't close the tooltip. */
+  const leaveTip = () => {
+    window.clearTimeout(timers.current.open);
+    window.clearTimeout(timers.current.leave);
+    timers.current.leave = window.setTimeout(hideTip, 60);
+  };
+
+  /* A tap or click elsewhere puts down whatever a finger left up. */
+  useEffect(() => {
+    if (!layer) return;
+    const down = (event: PointerEvent) => {
+      pointer.current = event.pointerType;
+      const target = event.composedPath()[0];
+      const inside = (selector: string) => target instanceof Element && target.closest(selector) !== null;
+      if (!inside("[data-pulse-tip]")) hideTip();
+      if (!inside("[data-pulse-graph]")) setDay(null);
+    };
+    const away = () => hideTip();
+    document.addEventListener("pointerdown", down, true);
+    layer.addEventListener("scroll", away, true);
+    window.addEventListener("resize", away);
+    return () => {
+      document.removeEventListener("pointerdown", down, true);
+      layer.removeEventListener("scroll", away, true);
+      window.removeEventListener("resize", away);
+      Object.values(timers.current).forEach((timer) => window.clearTimeout(timer));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [layer]);
+
+  const total = daily.reduce((sum, count) => sum + count, 0);
+  const top = Math.max(1, ...daily);
+  const peak = daily.lastIndexOf(top);
+  const person = tip?.person ? contributors.find((c) => c.user.id === tip.person) : undefined;
+  const dayPeople = day === null ? null : contributors.filter((c) => c.daily[day] > 0);
+  const shown = everyone ? contributors : contributors.slice(0, PULSE_PEOPLE);
+  const rest = contributors.slice(shown.length);
+
+  const figure = person ? person.comments : day !== null ? daily[day] : total;
+  const label = person
+    ? `${person.comments === 1 ? "comment" : "comments"} from ${firstName(person.user)}`
+    : day !== null
+      ? `${daily[day] === 1 ? "comment" : "comments"}, ${day >= 12 ? dayName(day).toLowerCase() : dayName(day)}`
+      : `${total === 1 ? "comment" : "comments"} in 14 days${sitewide ? "" : " on this page"}`;
+
+  const scrubTo = (next: number, keys = false) => {
+    setDay(next);
+    if (tip) hideTip();
+    if (keys) setSpoken(`${dayName(next)}, ${counted(daily[next], "comment")}`);
+  };
+  const dayAt = (x: number) => {
+    const box = graphRef.current!.getBoundingClientRect();
+    return Math.max(0, Math.min(13, Math.round(((x - box.left) / box.width) * 13)));
+  };
+  const personTip = (who: Contributor, el: HTMLElement) => ({
+    el,
+    person: who.user.id,
+    title: who.user.name,
+    agent: who.user.agent,
+    lines: [`${counted(who.comments, "comment")} in 14 days`, `Active ${span(pulse.now - who.lastAt)} ago`],
+  });
+  const moreTip = (el: HTMLElement) => {
+    const names = rest.slice(0, 4).map((c) => firstName(c.user)).join(", ");
+    return {
+      el,
+      title: `${rest.length} more`,
+      lines: [rest.length > 4 ? `${names} and ${rest.length - 4} others` : names],
+    };
+  };
+  /** A real control's way to the same tooltip a mouse gets by resting on it. */
+  const tipProps = (make: (el: HTMLElement) => Omit<PulseTipState, "glide">) => ({
+    "data-pulse-tip": "",
+    onPointerEnter: (event: ReactPointerEvent<HTMLButtonElement>) => {
+      if (event.pointerType !== "touch") showTip(make(event.currentTarget), { wait: true });
+    },
+    onPointerLeave: (event: ReactPointerEvent<HTMLButtonElement>) => {
+      if (event.pointerType !== "touch") leaveTip();
+    },
+    onFocus: (event: ReactFocusEvent<HTMLButtonElement>) => {
+      if (event.currentTarget.matches(":focus-visible")) showTip(make(event.currentTarget), { glide: false });
+    },
+    onBlur: () => hideTip(),
+    onKeyDown: (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+      if (event.key === "Escape" && tip) {
+        event.stopPropagation();
+        hideTip();
+      }
+    },
+  });
+
+  return (
+    <>
+      <li ref={headRef} className="pc-pulse-head pc-col">
+        <span className="pc-pulse-headline pc-row">
+          <span className="pc-pulse-figure">{figure}</span>
+          <span className="pc-pulse-label-text pc-truncate">{label}</span>
+        </span>
+        <span className="pc-pulse-sub pc-meta pc-truncate">
+          {person ? (
+            `${person.thisWeek} this week · active ${span(pulse.now - person.lastAt)} ago`
+          ) : day !== null ? (
+            daily[day] === 0 ? (
+              "Nobody commented."
+            ) : (
+              `${counted(dailyThreads[day], "thread")}, ${counted(daily[day] - dailyThreads[day], "reply", "replies")}. ${dayPeople!
+                .slice(0, 2)
+                .map((c) => firstName(c.user))
+                .join(", ")}${dayPeople!.length > 2 ? ` and ${dayPeople!.length - 2} more` : ""}`
+            )
+          ) : (
+            <>
+              <b>{pulse.open}</b> open · <b>{pulse.started.thisWeek}</b> new this week
+              {pulse.firstReply.median !== null && (
+                <>
+                  {" "}
+                  · <b>{span(pulse.firstReply.median)}</b> first reply
+                </>
+              )}
+            </>
+          )}
+        </span>
+      </li>
+      {total > 0 && (
+        <>
+          <li>
+            <div
+              ref={graphRef}
+              className="pc-pulse-graph"
+              data-pulse-graph=""
+              data-person={person ? "" : undefined}
+              tabIndex={0}
+              role="group"
+              aria-label={`Comments a day over 14 days, ${total} in all. Use the arrow keys to read each day.`}
+              onPointerDown={(event) => scrubTo(dayAt(event.clientX))}
+              onPointerMove={(event) => {
+                if (event.pointerType !== "touch" || event.buttons) scrubTo(dayAt(event.clientX));
+              }}
+              onPointerLeave={(event) => {
+                if (event.pointerType !== "touch") setDay(null);
+              }}
+              onFocus={(event) => {
+                if (event.currentTarget.matches(":focus-visible")) scrubTo(13, true);
+              }}
+              onBlur={() => setDay(null)}
+              onKeyDown={(event) => {
+                if (event.metaKey || event.ctrlKey || event.altKey) return;
+                if (event.key === "Escape" && day !== null) {
+                  event.stopPropagation();
+                  setDay(null);
+                  return;
+                }
+                const from = day ?? 13;
+                const to =
+                  event.key === "ArrowLeft"
+                    ? Math.max(0, from - 1)
+                    : event.key === "ArrowRight"
+                      ? Math.min(13, from + 1)
+                      : event.key === "Home"
+                        ? 0
+                        : event.key === "End"
+                          ? 13
+                          : null;
+                if (to === null) return;
+                event.preventDefault();
+                event.stopPropagation();
+                scrubTo(to, true);
+              }}
+            >
+              <svg viewBox="0 0 100 96" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                  <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor="currentColor" stopOpacity="0.16" />
+                    <stop offset="1" stopColor="currentColor" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <g className="pc-pulse-line">
+                  <polygon points={`0,96 ${graphLine(daily, top)} 100,96`} fill={`url(#${fillId})`} />
+                  <polyline
+                    points={graphLine(daily, top)}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                </g>
+                {person && (
+                  <polyline
+                    points={graphLine(person.daily, top)}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                )}
+              </svg>
+              {person ? (
+                <span className="pc-pulse-legend">
+                  <span>
+                    <i style={{ background: "var(--_faint)" }} />
+                    Everyone
+                  </span>
+                  <span>
+                    <i style={{ background: "var(--_strong)" }} />
+                    {firstName(person.user)}
+                  </span>
+                </span>
+              ) : (
+                <>
+                  {day === null && (
+                    <span
+                      className="pc-pulse-peak"
+                      style={{ left: `clamp(0px, calc(${(peak / 13) * 100}% - 8px), calc(100% - 20px))` }}
+                    >
+                      {top}
+                    </span>
+                  )}
+                  {day !== null && <span className="pc-pulse-crosshair" style={{ left: `${(day / 13) * 100}%` }} />}
+                  <span
+                    className="pc-pulse-dot"
+                    style={{
+                      left: `${((day ?? 13) / 13) * 100}%`,
+                      top: graphY(daily[day ?? 13], top),
+                    }}
+                  />
+                </>
+              )}
+            </div>
+            <span className="pc-hidden" aria-live="polite">
+              {spoken}
+            </span>
+          </li>
+          <li className="pc-pulse-axis pc-row pc-meta">
+            <span>13 days ago</span>
+            <span>Today</span>
+          </li>
+          <li className="pc-pulse-label pc-meta">People, last 14 days</li>
+          <li className="pc-pulse-people pc-row">
+            {shown.map((who) => (
+              <button
+                key={who.user.id}
+                type="button"
+                className="pc-pulse-person"
+                aria-label={`${who.user.name}${who.user.agent ? ", AI" : ""}, ${counted(who.comments, "comment")} in 14 days`}
+                data-dim={dayPeople && !dayPeople.includes(who) ? "" : undefined}
+                data-on={person === who ? "" : undefined}
+                {...tipProps((el) => personTip(who, el))}
+                onClick={(event) => {
+                  if (pointer.current !== "touch") return;
+                  if (tip?.person === who.user.id) hideTip();
+                  else showTip(personTip(who, event.currentTarget));
+                }}
+              >
+                <Avatar author={who.user} />
+              </button>
+            ))}
+            {rest.length > 0 && (
+              <button
+                type="button"
+                className="pc-pulse-person pc-pulse-more"
+                aria-label={`Show ${counted(rest.length, "more person", "more people")}`}
+                data-dim={dayPeople && !rest.some((who) => dayPeople.includes(who)) ? "" : undefined}
+                {...tipProps(moreTip)}
+                onClick={() => {
+                  hideTip();
+                  setEveryone(true);
+                }}
+              >
+                +{rest.length}
+              </button>
+            )}
+          </li>
+        </>
+      )}
+      <PulseTip layer={layer} tip={tip} />
+    </>
+  );
+}
+
+/**
+ * How feedback is going, in place of the list: the graph and who's behind it, then the threads
+ * nobody has answered and where the feedback gathers. Every figure is from `pulseOf`, over the
+ * comments the list already has.
  */
 function PulseView({
   board: { pulse, sitewide, path, replies },
@@ -4684,39 +5077,15 @@ function PulseView({
 }) {
   const pageLabel = useContext(PageLabelContext);
   const { keyOf } = useContext(PendingContext);
-  const { thisWeek, lastWeek } = pulse.started;
-  const trend =
-    thisWeek === lastWeek
-      ? "the same as last week"
-      : `${Math.abs(thisWeek - lastWeek)} ${thisWeek > lastWeek ? "more" : "fewer"} than last week`;
-  const total = pulse.daily.reduce((sum, day) => sum + day, 0);
-  const stats: [string | number, string][] = [
-    [pulse.open, "open"],
-    [thisWeek, "this week"],
-    [pulse.firstReply.median === null ? "–" : span(pulse.firstReply.median), "first reply"],
-  ];
-  const people = pulse.people.slice(0, 8);
   return (
     <ul className={`${className} pc-col pc-pulse`}>
-      <li className="pc-pulse-stats pc-row">
-        {stats.map(([value, label]) => (
-          <span key={label} className="pc-pulse-stat pc-col">
-            <span className="pc-pulse-value">{value}</span>
-            <span className="pc-meta">{label}</span>
-          </span>
-        ))}
-      </li>
-      <li className="pc-pulse-block pc-col">
-        <Spark days={pulse.daily} />
-        <span className="pc-meta">
-          {total === 1 ? "1 comment" : `${total} comments`} in 14 days{sitewide ? "" : " on this page"}. New
-          threads this week, {trend}.
-        </span>
-      </li>
+      <PulseGraph pulse={pulse} sitewide={sitewide} />
       <li className="pc-pulse-label pc-meta">
-        {pulse.waitingTotal === 0
-          ? "Every open thread has a reply."
-          : `Waiting on a first reply · ${pulse.waitingTotal}`}
+        {pulse.waitingTotal > 0
+          ? `Waiting on a first reply · ${pulse.waitingTotal}`
+          : pulse.open > 0
+            ? "Every open thread has a reply."
+            : "No open threads."}
       </li>
       {pulse.waiting.map((root) => {
         const at = pathOf(root.page);
@@ -4740,22 +5109,6 @@ function PulseView({
               <span className="pc-pulse-count">{page.open}</span>
             </li>
           ))}
-        </>
-      )}
-      {people.length > 0 && (
-        <>
-          <li className="pc-pulse-label pc-meta">Active this week</li>
-          <li className="pc-pulse-people pc-row">
-            {people.map(({ user, comments }) => (
-              <span key={user.id} title={`${user.name}, ${comments === 1 ? "1 comment" : `${comments} comments`}`}>
-                <Avatar author={user} />
-              </span>
-            ))}
-            {pulse.people.length > people.length && (
-              <span className="pc-meta">+{pulse.people.length - people.length}</span>
-            )}
-            <span className="pc-hidden">{pulse.people.map((p) => p.user.name).join(", ")}</span>
-          </li>
         </>
       )}
     </ul>
