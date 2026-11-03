@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
   - name: Read the docs
-    url: https://github.com/harshii0509/dogear#readme
-    about: Setup, props, backends and the MCP server are all in the README and docs/.
+    url: https://dogear.harshux.com/docs
+    about: Setup, props, backends and the MCP server, at dogear.harshux.com/docs.

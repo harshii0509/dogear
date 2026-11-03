@@ -2,10 +2,13 @@
 
 > This guide is also on the docs site, at [dogear.harshux.com/docs/backends/supabase](https://dogear.harshux.com/docs/backends/supabase).
 
-Free tier friendly: Postgres for storage, Supabase Auth for who you are, Row Level Security for
-the rules, and Realtime for live updates. No server code of your own.
+This setup fits Supabase's free tier and needs no server code of your own. Postgres stores the
+comments, Supabase Auth decides who's who, Row Level Security keeps the rules, and Realtime sends
+live updates.
 
-## 1. Schema and rules (SQL editor)
+## 1. Create the table and rules
+
+Run this in the SQL editor.
 
 ```sql
 create table comments (
@@ -60,7 +63,7 @@ create policy "delete" on comments for delete to authenticated
   using (author_id = auth.uid() or exists (select 1 from admins where user_id = auth.uid()));
 ```
 
-## 2. The adapter
+## 2. Add the adapter
 
 ```ts
 // comments-adapter.ts

@@ -8,7 +8,7 @@ Dogear talks to an **adapter**, a small object that reads and writes comments. C
 
 | You have | Use |
 | --- | --- |
-| Nothing yet, just trying | `localAdapter()`, the default. Comments stay in this browser |
+| Nothing yet, trying it out | `localAdapter()`, the default. Comments stay in this browser |
 | A Node server such as Next.js or Hono | `createDogear` from `@harshi04/dogear/server`, with `httpAdapter("/api/comments")` in the browser. See [The server](/backends/server) and [Next.js and Postgres](/backends/next-postgres) |
 | A server route you write yourself | `httpAdapter("/api/comments")` with the [REST shape](/backends/contract#the-rest-shape) |
 | Supabase | [A ready adapter with Row Level Security and Realtime](/backends/supabase) |

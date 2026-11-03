@@ -16,7 +16,7 @@ useDogearSnapshot("setup:stripe", state, (saved) => setState(saved));
 
 - **The key** names the form and what it fills in, so a snapshot only lands where it came from.
 - **`peekSnapshot`** covers a thread opened from another page, so the form mounts already filled in.
-- **Any JSON up to 64 KB.** It comes back with its page's comments, and is left out of every-page lists.
+- **Any JSON up to 64 KB.** It comes back with its page's comments, and is left out of every-page lists such as `listAll` and `?all=1`.
 
 ## Without React
 

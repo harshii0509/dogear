@@ -4,7 +4,7 @@ description: "Pick dark or light glass, follow the visitor's system setting, or 
 keywords: ["theme", "dark mode", "light mode", "css variables", "custom properties", "glass", "icons"]
 ---
 
-Dogear is made of glass, a frosted panel with a lit edge. It comes in two looks, and you pick one with `theme`.
+Dogear's panels are glass, translucent under a 16px backdrop blur, with a lit inner edge. They come in two looks, and you pick one with `theme`.
 
 | `theme` | Looks like |
 | --- | --- |
@@ -18,7 +18,7 @@ Dogear is made of glass, a frosted panel with a lit edge. It comes in two looks,
 
 ## Your own dark-mode switch
 
-If your site has its own switch, pass its current mode. The layer changes at once, without a reload.
+If your site has its own switch, pass its current mode. The widget changes at once, without a reload.
 
 <CodeGroup>
 
@@ -34,7 +34,7 @@ element.setAttribute("theme", dark ? "dark" : "light");
 
 ## Custom properties
 
-The layer draws into a shadow root, so your CSS can't break it and its CSS can't leak out. To change either look, set custom properties on `:root` or any ancestor. They win over both themes.
+The widget draws into a shadow root, so your CSS can't break it and its CSS can't leak out. To change either look, set custom properties on `:root` or any ancestor. They win over both themes.
 
 ```css
 :root {
@@ -44,7 +44,9 @@ The layer draws into a shadow root, so your CSS can't break it and its CSS can't
 }
 ```
 
-The accent marks only the one thing to do next, which is Send once there's text, and focus. Buttons, avatars and fields use the surface and the text colour. What's drawn on the page itself, the pin being placed and the outline while you aim, is the mark. It's blue by default, so it shows on any page.
+The accent colours only Send, once there's text, and the focus ring. Buttons, avatars and fields use the surface and the text colour.
+
+The mark colours what Dogear draws on your page, the pin being placed and the outline while you aim. It's blue by default, so it shows on any page.
 
 | Property | What it is |
 | --- | --- |
@@ -58,7 +60,7 @@ The accent marks only the one thing to do next, which is Send once there's text,
 | `--dogear-shadow`, `--dogear-pin-shadow` | A panel's shadow, and a pin's lighter one |
 | `--dogear-mark`, `--dogear-on-mark` | What's drawn on the page, and the text on it in the aim label |
 | `--dogear-mention`, `--dogear-agent` | An @mention, and the assistant's avatar and badge |
-| `--dogear-changed` | The dot on a thread that changed since you looked |
+| `--dogear-changed` | The amber dot on a pin whose element's text has changed |
 | `--dogear-font`, `--dogear-z-index`, `--dogear-right`, `--dogear-bottom` | Type, stacking, and where the button sits |
 
 ## Avatars

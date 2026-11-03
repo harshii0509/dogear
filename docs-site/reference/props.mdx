@@ -4,7 +4,7 @@ description: "Every prop of the React Comments component, next to its attribute 
 keywords: ["props", "attributes", "options", "Comments", "dogear-comments", "mount"]
 ---
 
-Each prop of `<Comments>` has an attribute on `<dogear-comments>`, except the ones that take a function or a React node, marked —.
+Each prop of `<Comments>` has an attribute on `<dogear-comments>`, except the ones that take a function or a React node. Those have a dash in the Attribute column.
 
 On the element, `endpoint="/api/comments"` makes an `httpAdapter` for you, and `guests` adds `{ guests: true }`. From a script, `Dogear.mount({ adapter, layout, navigate, … })` takes every prop except `enabled` and `icons`, functions included.
 
@@ -20,9 +20,9 @@ On the element, `endpoint="/api/comments"` makes an `httpAdapter` for you, and `
 | Prop | Attribute | Default | What it does |
 | --- | --- | --- | --- |
 | `shortcut` | `shortcut` | none | A key that toggles comment mode, such as `"c"` |
-| `activation` | `activation` | `"always"` | `"param"` shows the layer only after `?review` is in the URL, then for the rest of the tab. `?review=off` ends it. See [Review links](/guides/review-links) |
+| `activation` | `activation` | `"always"` | `"param"` shows the widget only after `?review` is in the URL, then for the rest of the tab. `?review=off` ends it. See [Review links](/guides/review-links) |
 | `reviewParam` | `review-param` | `"review"` | The query parameter `activation="param"` listens for |
-| `enabled` | — | `true` | `false` renders nothing, such as everywhere but preview deploys |
+| `enabled` | — | `true` | `false` renders nothing, for example everywhere except preview deploys |
 | `ignore` | `ignore` | none | A CSS selector to keep comments off, such as `"nav, .chat-widget"`. Pressing on a match does nothing |
 | `onActiveChange` | — | none | Called with `true` or `false` when someone opens or closes comments, or a thread link opens them. Not on a reload |
 | `linkParam` | `link-param` | `"dogear"` | The query parameter of a link to a thread, such as `"comment"` for `?comment=<id>`. A reply's id opens its thread, and `?dogear=` always works too |

@@ -4,9 +4,9 @@ description: "Paste one prompt into Claude Code, Cursor or Codex. It looks at yo
 keywords: ["claude code", "cursor", "codex", "agent", "prompt", "setup"]
 ---
 
-Open your coding agent in your project and paste the prompt below. It's an ordinary request in your own words. The agent looks at your project, asks you four questions, sets Dogear up, and ends with a list of what's left for you to do.
+Open your coding agent in your project and paste the prompt below. It's a plain request with no special syntax. The agent looks at your project, asks you four questions, sets Dogear up, and ends with a list of what's left for you to do.
 
-It asks before it installs anything, it leaves your secrets to you, and nothing is sent anywhere.
+It asks before it installs anything, it leaves your secrets to you, and Dogear itself sends nothing to any service.
 
 ```text Prompt
 I'd like to add Dogear (npm: @harshi04/dogear, MIT licence) to this project. It's Figma-style
@@ -53,7 +53,7 @@ comments on our pages: pins, threads, replies and resolve. Please set it up with
 | Should your coding agent read and reply? | Yes, through the [MCP server](/agents/mcp) |
 
 <Tip>
-  The docs the prompt points to ship inside the npm package, so the agent reads them from `node_modules` and needs no network access.
+  The docs the prompt points to ship inside the npm package, so the agent reads them from `node_modules` and needs no network access to read them.
 </Tip>
 
 ## Prefer to do it yourself

@@ -1,6 +1,6 @@
 ---
 title: "How it works"
-description: "One widget on your page, one route on your server. Everything past plain commenting switches on when you give it what it needs."
+description: "One widget on your page, one route on your server. Each extra turns on when you pass its option."
 keywords: ["architecture", "route", "widget", "guests", "mentions", "assistant", "mcp"]
 ---
 
@@ -10,7 +10,7 @@ The widget on your page talks to a single route that `createDogear` makes. The r
 
 ![How Dogear fits together. Your page and the widget talk to one route with optional auth and moderation, a can-see rule and a store. Optional alerts and an assistant run after the response, and coding agents use the same route over MCP.](https://raw.githubusercontent.com/harshii0509/dogear/main/media/how-it-fits.svg)
 
-Everything past plain commenting is optional, and switches on when you give it what it needs. See [what each option turns on](/backends/server#it-works-with-what-you-have).
+Everything past plain commenting is optional, and each extra turns on when you pass its option. See [what each option turns on](/backends/server#it-works-with-what-you-have).
 
 ## Nobody has to sign in
 
@@ -22,7 +22,7 @@ Read more in [Guests and sign-in](/guides/guests).
 
 ## Tag someone, and they hear about it
 
-With your own sign-in, `@` lists the people who can open the page. They see it in the app as a toast and an `@` badge, and `notify` can tell them wherever your team talks.
+With your own sign-in, `@` lists the people who have signed in. Someone you tag sees it in the app as a toast and an `@` badge, and `notify` can tell them through a webhook or your own notifier.
 
 ![Mentions. A tag counts only for someone who has signed in and can open the page. They get an in-app alert and your notifier's message, and open the thread from its link.](https://raw.githubusercontent.com/harshii0509/dogear/main/media/mentions.svg)
 
