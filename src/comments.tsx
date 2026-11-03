@@ -4914,6 +4914,8 @@ function PulseGraph({
               onPointerLeave={(event) => {
                 if (event.pointerType !== "touch") setDay(null);
               }}
+              /* The browser took this finger to scroll the list, so nobody is reading a day any more. */
+              onPointerCancel={() => setDay(null)}
               onFocus={(event) => {
                 if (event.currentTarget.matches(":focus-visible")) scrubTo(13, true);
               }}
