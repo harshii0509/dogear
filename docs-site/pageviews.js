@@ -3,6 +3,13 @@
 (function () {
   if (location.hostname !== "dogear.harshux.com") return;
 
+  // Set by opening the site with ?me=1, to leave your own browsers out of the numbers.
+  try {
+    if (localStorage.getItem("dogear-not-me") === "1") return;
+  } catch (e) {
+    // No storage, so no flag: count the page.
+  }
+
   // Public by design: this key can only send events.
   var KEY = "phc_Azjw5QQ5bbxXz9gREpHK6SKbntQ4KC5ECWAu6z6hjAZp";
   var visit = crypto.randomUUID();
