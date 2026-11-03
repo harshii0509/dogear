@@ -283,6 +283,7 @@ button.pc-pin:active { transform: scale(0.95); }
 .pc-mention-name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pc-mention-handle { color: var(--_muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .pc-mention-row > .pc-avatar { width: 20px; height: 20px; font-size: 9px; }
+@media (pointer: coarse) { .pc-mention-row { min-height: 40px; flex: none; } }
 /* A name a comment @mentions, as the writer meant it: the person, not their handle. */
 .pc-mention { color: var(--_mention); font-weight: 500; }
 .pc-key-action {
@@ -724,9 +725,25 @@ button.pc-pin:active { transform: scale(0.95); }
 .pc-card[data-sheet] .pc-field {
   max-height: max(20px, calc(100dvh - var(--_kb, 0px) - var(--_pan, 0px) - 190px));
 }
+/* The @ list gives way first, so the text and the send button stay in sight, and its people scroll. */
+.pc-card[data-sheet] .pc-compose-row, .pc-card[data-sheet] .pc-compose-foot { flex: none; }
+.pc-card[data-sheet] .pc-mentions { flex: 0 1 auto; min-height: 84px; overflow-y: auto; overscroll-behavior: contain; }
+.pc-thread[data-sheet] .pc-mentions { max-height: 104px; }
 /* A thread also has its head and at least a line of its comments to fit in. */
 .pc-thread[data-sheet] .pc-field {
   max-height: max(20px, calc(100dvh - var(--_kb, 0px) - var(--_pan, 0px) - 260px));
+}
+/* With the @ list up on a short screen the field gives way as well: it keeps the caret in sight. */
+.pc-card[data-sheet] .pc-compose:has(.pc-mentions) .pc-field {
+  max-height: max(20px, calc(100dvh - var(--_kb, 0px) - var(--_pan, 0px) - 300px));
+}
+.pc-thread[data-sheet] .pc-compose:has(.pc-mentions) .pc-field {
+  max-height: max(20px, calc(100dvh - var(--_kb, 0px) - var(--_pan, 0px) - 364px));
+}
+/* And for as long as you're picking someone, a thread may cover its pin to keep Reply on screen. */
+.pc-thread[data-sheet]:has(.pc-mentions) {
+  max-height: calc(100vh - var(--_kb, 0px) - var(--_pan, 0px) - 16px);
+  max-height: calc(100dvh - var(--_kb, 0px) - var(--_pan, 0px) - 16px);
 }
 @media (max-width: 480px) {
   .pc-dock[data-layout="tray"] {
@@ -735,6 +752,8 @@ button.pc-pin:active { transform: scale(0.95); }
   }
   /* Writing in a sheet: the pill would only show in slices around the keyboard's bar. */
   .pc-root[data-typing] .pc-dock { visibility: hidden; }
+  /* With the pill gone the sheet comes down onto the keys, where the keyboard shrank the layout too. */
+  .pc-root[data-typing] { --_sheet-foot: 8px; }
   /* Asking for a name, the panel's field is the one under the keyboard, so it rides above it. Only
      then: with a sheet up, the pill stays where the sheet can cover it. */
   .pc-dock[data-layout="tray"]:has(.pc-dock-box[data-state="join"]) {
