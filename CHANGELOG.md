@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.8.0 — 2026-11-04
 
 ### Changed
 - **Pulse: a graph you can read.** The 14 days are now the headline and a taller graph. Move across

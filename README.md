@@ -36,7 +36,7 @@ In plain HTML, load it from a CDN, or download `element.global.js` from a
 [release](https://github.com/harshii0509/dogear/releases) and serve it from your own site:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@harshi04/dogear@0.7/dist/element.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@harshi04/dogear@0.8/dist/element.global.js"></script>
 <dogear-comments shortcut="c"></dogear-comments>
 ```
 
