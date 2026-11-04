@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Dogear is Figma-style comments for any web page, published as `@harshi04/dogear`. This file is
+Dogear is comments for any web page, published as `@harshi04/dogear`. This file is
 for coding agents working in this repo. For the file map and what each part does, read
 [README.md → Working on Dogear](README.md#working-on-dogear). For the rules every backend keeps,
 read [docs/contract.md](docs/contract.md).
