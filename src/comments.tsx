@@ -68,7 +68,7 @@ import { STYLES } from "./styles";
 import { fullHeight, keyboardInset, keyboardIsUp, pinShift, viewportPan } from "./viewport";
 
 /**
- * Figma-style comments on whatever page is open: press the button, then click to drop a pin or
+ * Comments on whatever page is open: press the button, then click to drop a pin or
  * drag to mark an area, and write. Where comments are stored, and who you are, is the adapter's
  * business (`adapter.ts`).
  *
@@ -76,7 +76,7 @@ import { fullHeight, keyboardInset, keyboardIsUp, pinShift, viewportPan } from "
  * cannot touch it. Nothing shows until `adapter.me()` answers with a user and the first `list`
  * succeeds, so a signed-out visitor sees no button.
  *
- * Markers only show in comment mode, as in Figma: the page underneath is still the thing being
+ * Markers only show in comment mode: the page underneath is still the thing being
  * looked at the rest of the time.
  */
 export type CommentsProps = {
