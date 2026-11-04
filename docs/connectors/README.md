@@ -82,6 +82,9 @@ Supabase trigger, so try yours once on a test channel or database.
    retired its old incoming webhooks in 2026; Workflows is how a webhook posts to a channel now.
 2. Copy the workflow's URL into `TEAMS_WEBHOOK_URL`, and add `teams(process.env.TEAMS_WEBHOOK_URL!)`.
 
+Teams accepts the request before it posts the card, so a card that fails shows in the workflow's
+run history, not in `onError`.
+
 ### Notion
 
 1. Make a database with these properties: **Comment** (title), **Status** (select, with Open
@@ -109,7 +112,9 @@ The issue gets the thread's link as an attachment, which is how a resolve finds 
 2. Add `github({ token: process.env.GITHUB_TOKEN!, repo: "owner/name" })`.
 
 Issues are labelled `dogear` (`label` changes it). A resolve looks through the newest 300 of them
-for the thread, so a thread resolved after 300 newer ones leaves its issue open.
+for the thread, so a thread resolved after 300 newer ones leaves its issue open. The token's owner
+needs write access to the repository: without it GitHub drops the label, and a resolve can't find
+the issue.
 
 ## Write your own
 

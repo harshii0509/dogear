@@ -17,7 +17,7 @@ export function slack(url: string, options: Pick<Sender, "events" | "when"> = {}
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           // What the notification says; the blocks are what the channel shows.
-          text: headline(event),
+          text: plain(headline(event)),
           blocks: [
             { type: "section", text: { type: "mrkdwn", text: `*${plain(headline(event))}*\n>${quote}` } },
             { type: "context", elements: [{ type: "mrkdwn", text: `<${event.link}|Open the thread>` }] },

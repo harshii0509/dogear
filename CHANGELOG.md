@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.9.0 — 2026-11-04
 
 ### Changed
 - **Breaking: `webhook()` sends the new events.** Its body's `type` is one of the four above instead of
