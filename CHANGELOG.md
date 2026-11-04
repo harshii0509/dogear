@@ -3,7 +3,7 @@
 ## 0.9.0 — 2026-11-04
 
 ### Changed
-- **Breaking: `webhook()` sends the new events.** Its body's `type` is one of the four above instead of
+- **Breaking: `webhook()` sends the new events.** Its body's `type` is one of the four below instead of
   `comment.created`, it carries `actor` and `page`, and by default it hears new threads and
   resolves, not replies: pass `events: ["thread.created", "comment.replied"]` for every new
   comment, as before. `webhook()` now returns an object (`{ events, when, send }`), not a function.
