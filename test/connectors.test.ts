@@ -79,6 +79,12 @@ test("slack: the headline, the words quoted and escaped, and a link back", async
   assert.equal(body.blocks[1].elements[0].text, `<${link}|Open the thread>`);
 });
 
+test("slack: a name can't mention the channel", async () => {
+  const sent = fake();
+  await slack("https://hooks.slack.test/T/B/x").send({ ...created, actor: { id: "g", name: "<!channel>" } });
+  assert.equal(JSON.stringify(sent[0].body).includes("<!channel>"), false);
+});
+
 test("slack: events and when pass through", () => {
   const when = () => true;
   const connector = slack("https://hooks.slack.test/x", { events: ["comment.replied"], when });

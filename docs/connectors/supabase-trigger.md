@@ -38,7 +38,7 @@ Deno.serve(async (request) => {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      text: line,
+      text: plain(line),
       blocks: [
         { type: "section", text: { type: "mrkdwn", text: `*${plain(line)}*\n>${plain(words).replace(/\n/g, "\n>")}` } },
         { type: "context", elements: [{ type: "mrkdwn", text: `<${link.href}|Open the thread>` }] },
