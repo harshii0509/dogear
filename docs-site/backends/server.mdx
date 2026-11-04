@@ -30,7 +30,7 @@ Only a store is required. Each thing you add switches more on.
 | `moderate` | Text is checked before it's saved |
 | `directory` | The @ list comes from your own people table, and people who have never signed in can be mentioned |
 | `onCreated` and `defer` | Your code runs after each comment is saved, after the response, for alerts, an agent or counts |
-| `notify` | Whoever is @mentioned hears about it outside the page, through a webhook or your own notifier |
+| `notify` | New threads, replies and resolves reach Slack, Notion, Linear, GitHub or a webhook |
 | `assistant` | An AI assistant answers in the thread, labelled as AI |
 
 ## Stores
@@ -78,7 +78,8 @@ The table is `dogear_comments` unless you pass `table`. If you'd rather run migr
 | `deletable(user, comment)` | its author, or an admin | Who may delete a comment. The agent never deletes |
 | `onCreated(event)` | none | Runs after a comment is saved, with `{ comment, thread, author, mentioned, link }`. What throws goes to `onError` |
 | `defer(task)` | run at once, not awaited | How `onCreated` runs after the response, such as Next's `after` or your platform's `waitUntil` |
-| `notify` | none | A notifier, or a list of them. See [Mentions and alerts](/guides/mentions#alerts) |
+| `notify` | none | A connector, or a list of them. See [Mentions and alerts](/guides/mentions#alerts) |
+| `linkOrigin(request)` | the route's origin | The site a thread's `link` opens on, when the route isn't on it. Return null for the route's own |
 | `assistant` | none | An AI assistant that answers in threads. See [An AI assistant](/guides/assistant) |
 | `linkParam` | `"dogear"` | The query parameter in `link`, such as `"comment"` for `?comment=<id>`. Give the widget the same `linkParam` |
 | `moderate(text, kind, user)` | none | Return `{ ok: false, message }` to answer 422, and the widget shows `message`. Admins and the agent aren't checked |

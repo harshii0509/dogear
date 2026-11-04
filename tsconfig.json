@@ -9,7 +9,8 @@
     "noEmit": true,
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "paths": { "@harshi04/dogear/server": ["./src/server/index.ts"] }
   },
-  "include": ["src", "test"]
+  "include": ["src", "test", "docs/connectors"]
 }

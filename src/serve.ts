@@ -7,6 +7,7 @@ import { dirname, join } from "node:path";
 
 import type { User } from "./model";
 import { createDogear } from "./server/handler";
+import { webhook } from "./server/notify";
 import { fileStore } from "./server/store";
 
 /**
@@ -37,6 +38,8 @@ export type ServeOptions = {
   origins?: string[];
   /** The agent's token. Default: a fresh random one, written next to `file` as `token`. */
   token?: string;
+  /** A URL that hears new threads and resolves, as `webhook()` posts them: Zapier, Make, n8n. */
+  webhook?: string;
 };
 
 export type Served = { url: string; endpoint: string; token: string; close(): Promise<void> };
@@ -115,6 +118,12 @@ export async function serve(options: ServeOptions = {}): Promise<Served> {
     auth: () => you,
     join: async (_request, name, tint) => (you ??= { id: "local", name, ...(tint ? { tint } : {}) }),
     onError: (error) => console.error("dogear serve:", error),
+    ...(options.webhook ? { notify: webhook({ url: options.webhook }) } : {}),
+    // Links open the page that's using this server, not the server itself.
+    linkOrigin: (request) => {
+      const origin = request.headers.get("origin");
+      return origin && devOrigin(origin, origins) ? origin : null;
+    },
   });
 
   async function handle(request: IncomingMessage, response: ServerResponse, actualPort: number) {

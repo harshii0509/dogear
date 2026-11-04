@@ -10,7 +10,7 @@ keywords: ["imports", "entry points", "exports", "react", "server", "element", "
 | `@harshi04/dogear` | `localAdapter`, `httpAdapter`, `validateNew`, `toMarkdown`, and the types such as `Comment`, `User` and `Adapter`. No DOM, so it's safe on a server |
 | `@harshi04/dogear/react` | `<Comments>`, `useDogearSnapshot` and `peekSnapshot`, plus everything in the main entry |
 | `@harshi04/dogear/element` | Defines `<dogear-comments>`, with `mount`, `threads` and `markdown`. The CDN's `element.global.js` is the same, as the global `Dogear` |
-| `@harshi04/dogear/server` | `createDogear`, the stores (`memoryStore`, `fileStore`, `postgresStore`, `schema`) and `webhook`. Node only, and the browser never imports it |
+| `@harshi04/dogear/server` | `createDogear`, the stores (`memoryStore`, `fileStore`, `postgresStore`, `schema`), and for connectors `webhook`, `headline` and `excerpt`. Node only, and the browser never imports it |
 | `npx dogear` | The command line. `dogear serve` runs a local comments server, and `dogear mcp` connects coding agents |
 
 ## The command line

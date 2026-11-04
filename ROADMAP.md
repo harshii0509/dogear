@@ -4,12 +4,14 @@ I parked v0.1 (the widget, adapters, the contract, the setup prompt and examples
 and picked it up again on 2026-10-12. v0.2.0, the first release as Dogear, is in CHANGELOG.md.
 
 ## Build next
-- **A Slack or Teams recipe.** `webhook()` already posts each new comment to a URL. What's
-  missing is a docs recipe that turns that into a Slack or Teams message, from the route or a
-  database trigger. The setup prompt could ask whether you want it. ([#10](https://github.com/harshii0509/dogear/issues/10), kalebheitzman/pindrop)
+- **Connectors in the setup prompt.** The prompt could ask whether you want Slack or Notion, and
+  copy the recipe in.
+- **Two-way sync.** Ticking a Notion row or closing a Linear issue resolves the thread. After
+  seeing how connectors are used.
 - **Offline retry queue.** A failed post is kept and retried with backoff. ([#11](https://github.com/harshii0509/dogear/issues/11), SitePing)
 
 ## Done since v0.1
+- **Connectors.** Four comment events, and recipes for Slack, Teams, Notion, Linear, GitHub and a Supabase trigger (`docs/connectors/`). ([#10](https://github.com/harshii0509/dogear/issues/10), kalebheitzman/pindrop)
 - **Ignore selectors.** `ignore="nav, .chat-widget"`, as a prop and an attribute.
 - **Aim outline.** The element a press would anchor to is outlined as you move, with a label.
 - **Anchor on release.** Dogear takes the element when you let go, not when you send.
