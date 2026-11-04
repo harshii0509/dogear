@@ -4,7 +4,7 @@
 [![MIT licence](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
 [![CI](https://github.com/harshii0509/dogear/actions/workflows/ci.yml/badge.svg)](https://github.com/harshii0509/dogear/actions/workflows/ci.yml)
 
-Figma-style comments on any web page. Click to drop a pin or drag to mark an area, then write.
+Comments on any web page. Click to drop a pin or drag to mark an area, then write.
 People reply in threads, edit and resolve, and see each other's comments arrive.
 
 <p align="center">
