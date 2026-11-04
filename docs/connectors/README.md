@@ -66,9 +66,9 @@ const dogear = createDogear({
 | GitHub Issues | [github.ts](github.ts) | An issue per thread; resolving closes it as completed |
 | Supabase, no server | [supabase-trigger.md](supabase-trigger.md) | A database trigger and an Edge Function that post to Slack |
 
-Every recipe's calls are tested against a fake of its API (`test/connectors.test.ts`), so the file
-you copy is the file that's checked. They haven't been run against the live services by these
-tests, so try yours once on a test channel or database.
+The `.ts` recipes are tested against a fake of each API (`test/connectors.test.ts`), so the file
+you copy is the file that's checked. Those tests don't reach the live services and don't cover the
+Supabase trigger, so try yours once on a test channel or database.
 
 ### Slack
 

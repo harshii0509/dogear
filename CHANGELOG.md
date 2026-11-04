@@ -26,7 +26,7 @@
   `{ events, when, send }`, which hears new threads and resolves unless it picks others, and
   `when` filters by page or person. A failing connector goes to `onError`; the comment stays saved.
 - **Recipes in `docs/connectors/`** for Slack, Microsoft Teams (Workflows), Notion, Linear, GitHub
-  Issues and a Supabase database trigger: short files to copy, each tested with a fake of its API.
+  Issues and a Supabase database trigger: short files to copy. The code recipes are tested with a fake of each API.
 - **`headline(event)`** gives one plain line ("Alex Doe started a thread on /pricing").
 - **`dogear serve --webhook <url>`** (or `DOGEAR_WEBHOOK`) posts new threads and resolves to a
   URL, for Zapier, Make or n8n, with links that open the page using the server.
